@@ -18,6 +18,17 @@ This application lets you generate speech in three ways:
 
 **Demo**: First generation takes 30-40 seconds (loading models). After that, each generation is ~8-12 seconds on RTX 3060.
 
+## UI Screenshots
+
+### Custom Voice
+![Main TTS interface showing text input box, voice selection controls, and generate speech button](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118)
+
+### Voice Design
+![Generated audio playback panel with waveform preview and download options](https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc)
+
+### Voice Clone
+![Settings or configuration screen with model parameters and runtime controls](https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4)
+
 ## Requirements
 
 **Hardware (Minimum)**:
