@@ -35,15 +35,11 @@ Turn scripts into ready-to-publish audio in one click.
 Podcasts • Audiobooks • E-learning • Marketing videos
 
 ### Screenshots
+<table> <tr> <td align="center" width="25%"><b>🎭 Custom Voice</b><br/> <img src="https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118" width="100%"/></td> <td align="center" width="25%"><b>🎨 Voice Design</b><br/> <img src="https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc" width="100%"/></td> <td align="center" width="25%"><b>🔊 Voice Clone</b><br/> <img src="https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4" width="100%"/></td> <td align="center" width="25%"><b>🎙️ Podcast Mode</b><br/> <img src="https://github.com/user-attachments/assets/750b17f8-023d-45a1-b9f0-79561dadcad5" width="100%"/></td> </tr> </table>
 
-**🎭 Custom Voice** – preset voice selection  
-![Custom Voice interface](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118)
+🎙️ Podcast Mode - Script → Final Audio
 
-**🎨 Voice Design** – describe-to-generate interface  
-![Voice Design interface](https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc)
-
-**🔊 Voice Clone** – upload and clone workflow  
-![Voice Clone interface](https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4)
+<table> <tr> <td width="50%" align="center"> <b>Script Editor</b><br/> <img src="https://github.com/user-attachments/assets/5e2d4f72-c51f-428e-ba79-153ccdee8057" height="260"/> </td> <td width="50%" align="center"> <b>Rendered Output</b><br/> <img src="https://github.com/user-attachments/assets/f3864540-9df2-4add-89a8-2d432194cb41" height="260"/> </td> </tr> </table>
 
 ---
 
