@@ -1,0 +1,25 @@
+# Core TTS Dependencies
+qwen-tts>=0.0.5
+torch>=2.0.0
+transformers>=4.30.0
+soundfile>=0.12.0
+librosa>=0.10.0
+
+# Backend API
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+aiofiles>=23.0.0
+pydantic>=2.0.0
+
+# Audio Processing
+pydub>=0.25.0
+numpy>=1.24.0
+
+# Optional Performance
+flash-attn>=2.5.0; sys_platform == 'linux' or sys_platform == 'win32'
+
+# Utilities
+requests>=2.31.0
+tqdm>=4.66.0
+python-dotenv>=1.0.0

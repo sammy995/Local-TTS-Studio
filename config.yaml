@@ -1,0 +1,96 @@
+app:
+  name: "Qwen3-TTS Local App"
+  version: "1.0.0"
+  host: "0.0.0.0"
+  port: 8000
+
+models:
+  cache_dir: "./models"
+  default_size: "1.7B"
+  available_models:
+    custom_voice:
+      - "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"
+      - "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice"
+    voice_design:
+      - "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+    base_clone:
+      - "Qwen/Qwen3-TTS-12Hz-1.7B-Base"
+      - "Qwen/Qwen3-TTS-12Hz-0.6B-Base"
+  tokenizer:
+    - "Qwen/Qwen3-TTS-Tokenizer-12Hz"
+
+generation:
+  default_params:
+    max_new_tokens: 2048
+    temperature: 0.9
+    top_k: 50
+    top_p: 1.0
+    do_sample: true
+    repetition_penalty: 1.05
+  subtalker:
+    dosample: true
+    top_k: 50
+    top_p: 1.0
+    temperature: 0.9
+
+audio:
+  sample_rate: 24000
+  output_formats:
+    - "wav"
+    - "mp3"
+    - "flac"
+  max_duration_seconds: 300
+
+speakers:
+  custom_voice:
+    - name: "Vivian"
+      language: "Chinese"
+      description: "温柔甜美女声"
+    - name: "Serena"
+      language: "English"
+      description: "Professional female voice"
+    - name: "Uncle_Fu"
+      language: "Chinese"
+      description: "成熟男声"
+    - name: "Dylan"
+      language: "English"
+      description: "Young male voice"
+    - name: "Eric"
+      language: "English"
+      description: "Deep male voice"
+    - name: "Ryan"
+      language: "English"
+      description: "Clear male voice"
+    - name: "Aiden"
+      language: "English"
+      description: "Energetic male voice"
+    - name: "Ono_Anna"
+      language: "Japanese"
+      description: "日本語女性声"
+    - name: "Sohee"
+      language: "Korean"
+      description: "한국어 여성 목소리"
+
+languages:
+  - code: "Auto"
+    name: "Auto Detect"
+  - code: "Chinese"
+    name: "中文"
+  - code: "English"
+    name: "English"
+  - code: "Japanese"
+    name: "日本語"
+  - code: "Korean"
+    name: "한국어"
+  - code: "German"
+    name: "Deutsch"
+  - code: "French"
+    name: "Français"
+  - code: "Russian"
+    name: "Русский"
+  - code: "Portuguese"
+    name: "Português"
+  - code: "Spanish"
+    name: "Español"
+  - code: "Italian"
+    name: "Italiano"

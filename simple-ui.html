@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwen3 TTS · Voice Synthesis Studio</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #000000;
+            --primary-light: #1a1a1a;
+            --accent: #ABF62D;
+            --accent-hover: #96E01A;
+            --accent-light: #D6F5A8;
+            --accent-purple: #D6A3FB;
+            --accent-purple-dark: #C088F0;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --text-tertiary: #808080;
+            --text-on-accent: #000000;
+            --text-on-dark: #FFFFFF;
+            --border: #2A2A2A;
+            --bg-dark: #0A0A0A;
+            --bg-subtle: #151515;
+            --bg-card: #1A1A1A;
+            --success: #ABF62D;
+            --error: #FF4444;
+            --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 30px -8px rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 0;
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--accent);
+            color: var(--text-primary);
+            padding: 2rem 3rem;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 100%
+            );
+            animation: shimmer 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); opacity: 0; }
+            50% { transform: translateX(100%); opacity: 1; }
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            opacity: 0.9;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-purple);
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 900;
+            color: var(--primary);
+            box-shadow: 0 4px 0 rgba(214, 163, 251, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(214, 163, 251, 0.5);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-subtle);
+            border-right: 3px solid var(--accent);
+            padding: 2rem 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0 1rem;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-align: left;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .tab-icon {
+            width: 22px;
+            height: 22px;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .tab:hover {
+            background: rgba(214, 163, 251, 0.2);
+            color: var(--accent-purple);
+            border-left: 4px solid var(--accent-purple);
+        }
+
+        .tab:hover .tab-icon {
+            opacity: 1;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 3px 0 rgba(214, 163, 251, 0.5);
+            border: 2px solid var(--primary);
+        }
+
+        .tab.active .tab-icon {
+            opacity: 1;
+        }
+
+        .tab.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: white;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--bg-dark);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 3rem;
+            max-width: 900px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .tab-title {
+            font-size: 2.25rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .tab-description {
+            font-size: 1.0625rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.625rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.9375rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 3px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 4px 0 rgba(214, 163, 251, 0.5), 0 0 20px rgba(214, 163, 251, 0.3);
+            transform: translateY(-2px);
+            background: var(--bg-subtle);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 1rem 2.5rem;
+            border: 3px solid var(--primary);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 0 rgba(214, 163, 251, 0.5), 0 0 25px rgba(214, 163, 251, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 rgba(214, 163, 251, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .audio-player {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--accent-purple);
+            border: 3px solid var(--primary);
+            border-radius: 4px;
+            box-shadow: 0 4px 0 rgba(214, 163, 251, 0.4), 0 0 30px rgba(214, 163, 251, 0.2);
+        }
+
+        .audio-player h4 {
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: var(--text-on-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .audio-player audio {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.875rem 1.75rem;
+            background: var(--primary);
+            color: var(--accent);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            font-weight: 900;
+            transition: all 0.2s ease;
+            border: 3px solid var(--primary);
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 rgba(214, 163, 251, 0.5);
+            border-color: var(--accent-purple);
+        }
+
+        .status {
+            margin-top: 1.25rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status.success {
+            background: var(--accent);
+            color: var(--primary);
+            border: 3px solid var(--primary);
+            font-weight: 700;
+        }
+
+        .status.error {
+            background: #FFE5E5;
+            color: #DC2626;
+            border: 3px solid #DC2626;
+            font-weight: 700;
+        }
+
+        .status.info {
+            background: var(--accent-purple);
+            color: var(--primary);
+            border: 3px solid var(--primary);
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(214, 163, 251, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #E0E0E0;
+            border-top: 4px solid var(--accent-purple);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 1rem;
+            box-shadow: 0 0 20px rgba(214, 163, 251, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 2rem;
+            border: 3px dashed var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            min-height: 150px;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--accent);
+            background: rgba(171, 246, 45, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            width: 52px;
+            height: 52px;
+            color: var(--accent);
+        }
+
+        .file-label-text {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .file-label-hint {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+            color: var(--text-tertiary);
+        }
+
+        .file-name {
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-subtle);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-subtle);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .checkbox-wrapper:hover {
+            background: rgba(214, 163, 251, 0.15);
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-purple);
+        }
+
+        .checkbox-wrapper label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .system-info-compact {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .info-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        .info-label {
+            color: var(--text-tertiary);
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-tabs {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .tab {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tab-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        /* Magical Progress Bar */
+        .progress-container {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            background: var(--accent-purple);
+            border: 3px solid var(--primary);
+            border-radius: 4px;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 0 rgba(214, 163, 251, 0.4), 0 0 30px rgba(214, 163, 251, 0.2);
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-icon {
+            width: 26px;
+            height: 26px;
+            animation: rotate 2s linear infinite;
+            color: var(--text-primary);
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-time {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .progress-bar-wrapper {
+            position: relative;
+            height: 16px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            border: 2px solid var(--border);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-percentage {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-stages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .progress-stage {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            border: 2px solid var(--border);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .progress-stage.active {
+            opacity: 1;
+            box-shadow: 0 4px 0 rgba(171, 246, 45, 0.3);
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--text-on-accent);
+        }
+
+        .progress-stage.completed {
+            opacity: 0.7;
+            background: var(--bg-subtle);
+            border-color: var(--border);
+        }
+
+        .stage-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .stage-icon.loading {
+            animation: rotate 1s linear infinite;
+        }
+
+        /* Waveform Animation */
+        .waveform {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 40px;
+            margin: 1.5rem 0;
+        }
+
+        .waveform-bar {
+            width: 5px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: waveform 1s ease-in-out infinite;
+        }
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .waveform-bar:nth-child(1) { animation-delay: 0s; height: 10px; }
+        .waveform-bar:nth-child(2) { animation-delay: 0.1s; height: 20px; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.2s; height: 35px; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.3s; height: 25px; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.4s; height: 30px; }
+        .waveform-bar:nth-child(6) { animation-delay: 0.5s; height: 20px; }
+        .waveform-bar:nth-child(7) { animation-delay: 0.6s; height: 15px; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+        }
+
+        /* Success Animation */
+        .success-animation {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-animation.active {
+            display: block;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            width: 88px;
+            height: 88px;
+            margin: 0 auto 1.5rem;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+            border: 4px solid var(--primary);
+        }
+
+        .success-icon svg {
+            width: 52px;
+            height: 52px;
+            stroke: var(--primary);
+            stroke-width: 4;
+        }
+
+        /* Hover Effects */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Form Input Focus Animations */
+        .form-group {
+            position: relative;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            transform: translateY(-2px);
+        }
+
+        /* Floating Labels */
+        .floating-label {
+            position: relative;
+        }
+
+        .floating-label input,
+        .floating-label textarea {
+            padding-top: 1.5rem;
+        }
+
+        .floating-label label {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .floating-label input:focus + label,
+        .floating-label textarea:focus + label,
+        .floating-label input:not(:placeholder-shown) + label,
+        .floating-label textarea:not(:placeholder-shown) + label {
+            top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        /* Card Hover Effects */
+        .tab {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .tab:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Confetti Effect */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            position: absolute;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Pulse Effect */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                                    <stop offset="25%" style="stop-color:#6366F1;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+                                    <stop offset="75%" style="stop-color:#06B6D4;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <g stroke="url(#logoGradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- Simplified waveform for small icon -->
+                                <circle cx="2" cy="16" r="2" fill="url(#logoGradient)"/>
+                                <line x1="2" y1="16" x2="7" y2="10"/>
+                                <circle cx="7" cy="10" r="2" fill="url(#logoGradient)"/>
+                                <line x1="7" y1="10" x2="12" y2="18"/>
+                                <circle cx="12" cy="18" r="2" fill="url(#logoGradient)"/>
+                                <line x1="12" y1="18" x2="16" y2="6"/>
+                                <circle cx="16" cy="6" r="2" fill="url(#logoGradient)"/>
+                                <line x1="16" y1="6" x2="20" y2="14"/>
+                                <circle cx="20" cy="14" r="2" fill="url(#logoGradient)"/>
+                                <line x1="20" y1="14" x2="25" y2="10"/>
+                                <circle cx="25" cy="10" r="2" fill="url(#logoGradient)"/>
+                                <line x1="25" y1="10" x2="30" y2="16"/>
+                                <circle cx="30" cy="16" r="2" fill="url(#logoGradient)"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>Voice Synthesis Studio</h1>
+                        <div class="header-subtitle">Powered by Qwen3-TTS</div>
+                    </div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <nav class="nav-tabs">
+                    <button class="tab active" onclick="switchTab(0)">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>Custom Voice</span>
+                    </button>
+                    <button class="tab" onclick="switchTab(1)">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        <span>Voice Design</span>
+                    </button>
+                    <button class="tab" onclick="switchTab(2)">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                        <span>Voice Clone</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="content-area">
+                <!-- Custom Voice Tab -->
+                <div class="tab-content active" id="tab0">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Custom Voice</h2>
+                        <p class="tab-description">Generate natural-sounding speech with pre-trained voice profiles and optional emotional styling</p>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="cv-text">Text to Synthesize *</label>
+                        <textarea id="cv-text" placeholder="Enter the text you want to convert to speech...">Hello! This is a test of the custom voice generation system.</textarea>
+                    </div>
+
+            <div class="form-group">
+                <label for="cv-speaker">Speaker *</label>
+                <select id="cv-speaker">
+                    <option value="Vivian">Vivian - Bright young female (Chinese)</option>
+                    <option value="Serena">Serena - Warm gentle female (Chinese)</option>
+                    <option value="Uncle_Fu">Uncle Fu - Seasoned male (Chinese)</option>
+                    <option value="Dylan">Dylan - Beijing male (Chinese Dialect)</option>
+                    <option value="Eric">Eric - Chengdu male (Sichuan Dialect)</option>
+                    <option value="Ryan">Ryan - Dynamic male (English)</option>
+                    <option value="Aiden">Aiden - American male (English)</option>
+                    <option value="Ono_Anna">Ono Anna - Playful female (Japanese)</option>
+                    <option value="Sohee">Sohee - Warm female (Korean)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cv-language">Language</label>
+                <select id="cv-language">
+                    <option value="Auto">Auto Detect</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="English">English</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="Korean">Korean</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cv-instruct">Style Instruction (Optional)</label>
+                <input type="text" id="cv-instruct" placeholder="e.g., Say it in a very happy tone">
+            </div>
+
+<button class="btn" onclick="generateCustomVoice()">
+                        <span>✨ Generate Speech</span>
+                    </button>
+
+                    <div class="progress-container" id="cv-progress">
+                        <div class="progress-header">
+                            <div class="progress-status">
+                                <svg class="progress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                <span id="cv-progress-status">Initializing...</span>
+                            </div>
+                            <div class="progress-time" id="cv-progress-time">~30s remaining</div>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="cv-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-percentage" id="cv-progress-percent">0%</div>
+                        <div class="waveform">
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                        </div>
+                        <div class="progress-stages">
+                            <div class="progress-stage" id="cv-stage-1">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                </svg>
+                                <span>Loading Model</span>
+                            </div>
+                            <div class="progress-stage" id="cv-stage-2">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                </svg>
+                                <span>Processing Text</span>
+                            </div>
+                            <div class="progress-stage" id="cv-stage-3">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                </svg>
+                                <span>Generating Audio</span>
+                            </div>
+                            <div class="progress-stage" id="cv-stage-4">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span>Finalizing</span>
+                            </div>
+                        </div>
+                    </div>
+
+            <div class="loading" id="cv-loading">
+                <div class="spinner"></div>
+                <p>Generating speech...</p>
+            </div>
+
+                    <div id="cv-result"></div>
+                </div>
+
+                <!-- Voice Design Tab -->
+                <div class="tab-content" id="tab1">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Voice Design</h2>
+                        <p class="tab-description">Create unique voices using natural language descriptions. Describe the characteristics you want and let AI generate it.</p>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="vd-text">Text to Synthesize *</label>
+                        <textarea id="vd-text" placeholder="Enter the text...">Hello! I'm testing the voice design feature.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vd-language">Language</label>
+                        <select id="vd-language">
+                            <option value="Auto">Auto Detect</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="English">English</option>
+                            <option value="Japanese">Japanese</option>
+                            <option value="Korean">Korean</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vd-instruct">Voice Description *</label>
+                        <textarea id="vd-instruct" placeholder="Describe the voice characteristics...">A cheerful young female voice, bright and energetic with a friendly tone.</textarea>
+                    </div>
+
+                    <button class="btn" onclick="generateVoiceDesign()">
+                        <span>🎨 Design & Generate</span>
+                    </button>
+
+                    <div class="progress-container" id="vd-progress">
+                        <div class="progress-header">
+                            <div class="progress-status">
+                                <svg class="progress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                <span id="vd-progress-status">Designing voice...</span>
+                            </div>
+                            <div class="progress-time" id="vd-progress-time">~35s remaining</div>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="vd-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-percentage" id="vd-progress-percent">0%</div>
+                        <div class="waveform">
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                        </div>
+                        <div class="progress-stages">
+                            <div class="progress-stage" id="vd-stage-1">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                </svg>
+                                <span>Analyzing Description</span>
+                            </div>
+                            <div class="progress-stage" id="vd-stage-2">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                </svg>
+                                <span>Creating Voice Profile</span>
+                            </div>
+                            <div class="progress-stage" id="vd-stage-3">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                </svg>
+                                <span>Synthesizing Audio</span>
+                            </div>
+                            <div class="progress-stage" id="vd-stage-4">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span>Complete</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="loading" id="vd-loading">
+                        <div class="spinner"></div>
+                        <p>Designing voice...</p>
+                    </div>
+
+                    <div id="vd-result"></div>
+                </div>
+
+                <!-- Voice Clone Tab -->
+                <div class="tab-content" id="tab2">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Voice Clone</h2>
+                        <p class="tab-description">Clone any voice from a reference audio sample. Upload audio and generate speech in that voice.</p>
+                    </div>
+            
+                    <div class="form-group">
+                        <label>Reference Audio *</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="vc-audio" accept="audio/*" onchange="updateFileName(this, 'vc-filename')">
+                            <label for="vc-audio" class="file-input-label">
+                                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <div class="file-label-text">Upload Audio File</div>
+                                <div class="file-label-hint">WAV, MP3, or other audio formats</div>
+                            </label>
+                        </div>
+                        <div class="file-name" id="vc-filename">No file selected</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vc-ref-text">Reference Text (Transcript)</label>
+                        <textarea id="vc-ref-text" placeholder="Enter the transcript of the reference audio (optional if using X-Vector only mode)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="vc-xvector">
+                            <label for="vc-xvector">X-Vector Only Mode (Use speaker embedding only, no need for transcript)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vc-text">Text to Synthesize *</label>
+                        <textarea id="vc-text" placeholder="Enter the text you want in the cloned voice...">This is a test of the voice cloning system.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vc-language">Language</label>
+                        <select id="vc-language">
+                            <option value="Auto">Auto Detect</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="English">English</option>
+                            <option value="Japanese">Japanese</option>
+                            <option value="Korean">Korean</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" onclick="generateVoiceClone()">
+                        <span>🔮 Clone & Generate</span>
+                    </button>
+
+                    <div class="progress-container" id="vc-progress">
+                        <div class="progress-header">
+                            <div class="progress-status">
+                                <svg class="progress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                <span id="vc-progress-status">Analyzing voice...</span>
+                            </div>
+                            <div class="progress-time" id="vc-progress-time">~40s remaining</div>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="vc-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-percentage" id="vc-progress-percent">0%</div>
+                        <div class="waveform">
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                        </div>
+                        <div class="progress-stages">
+                            <div class="progress-stage" id="vc-stage-1">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                </svg>
+                                <span>Processing Reference</span>
+                            </div>
+                            <div class="progress-stage" id="vc-stage-2">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                </svg>
+                                <span>Extracting Voice Features</span>
+                            </div>
+                            <div class="progress-stage" id="vc-stage-3">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                </svg>
+                                <span>Cloning Voice</span>
+                            </div>
+                            <div class="progress-stage" id="vc-stage-4">
+                                <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span>Done</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="loading" id="vc-loading">
+                        <div class="spinner"></div>
+                        <p>Cloning voice...</p>
+                    </div>
+
+                    <div id="vc-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Load system info on page load
+        loadSystemInfo();
+
+        function switchTab(index) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            document.querySelectorAll('.tab')[index].classList.add('active');
+            document.querySelectorAll('.tab-content')[index].classList.add('active');
+        }
+
+        async function loadSystemInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/api/system/info`);
+                const data = await response.json();
+                
+                let html = `
+                    <div class="info-row">
+                        <span class="label">Status:</span>
+                        <span class="value">${data.status || 'Unknown'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">GPU Available:</span>
+                        <span class="value">${data.gpu_available ? 'Yes ✓' : 'No ✗'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Device:</span>
+                        <span class="value">${data.device || 'N/A'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Models Loaded:</span>
+                        <span class="value">${data.models_loaded?.length || 0} (${data.models_loaded?.join(', ') || 'None'})</span>
+                    </div>
+                `;
+                
+                document.getElementById('systemDetails').innerHTML = html;
+            } catch (error) {
+                document.getElementById('systemDetails').innerHTML = `
+                    <div class="info-row">
+                        <span class="value" style="color: #721c24;">Error connecting to backend: ${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function updateFileName(input, displayId) {
+            const fileName = input.files[0]?.name || 'No file selected';
+            document.getElementById(displayId).textContent = fileName;
+        }
+
+        function showResult(containerId, audioUrl, message, isError = false) {
+            const container = document.getElementById(containerId);
+            if (isError) {
+                container.innerHTML = `
+                    <div class="status error">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                        </svg>
+                        ${message}
+                    </div>`;
+            } else {
+                // Show success animation with confetti
+                createConfetti();
+                
+                container.innerHTML = `
+                    <div class="success-animation active">
+                        <div class="success-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="gradient-text" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Success!</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">${message}</p>
+                    </div>
+                    <div class="audio-player">
+                        <h4>Generated Audio</h4>
+                        <audio controls src="${audioUrl}" autoplay></audio>
+                        <a href="${audioUrl}" download="generated_audio.wav" class="download-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download Audio
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        function startRealTimeProgress(prefix, sessionId) {
+            const progressContainer = document.getElementById(`${prefix}-progress`);
+            const progressBar = document.getElementById(`${prefix}-progress-bar`);
+            const progressPercent = document.getElementById(`${prefix}-progress-percent`);
+            const progressTime = document.getElementById(`${prefix}-progress-time`);
+            const progressStatus = document.getElementById(`${prefix}-progress-status`);
+            
+            progressContainer.classList.add('active');
+            
+            // Map progress stages to UI stage elements
+            const stageMapping = {
+                'loading': 1,
+                'processing': 2,
+                'generating': 3,
+                'complete': 4
+            };
+            
+            let eventSource = null;
+            let lastStage = 0;
+            
+            const cleanup = () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            };
+            
+            // Connect to SSE endpoint
+            eventSource = new EventSource(`/api/progress/${sessionId}`);
+            
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    const { stage, progress, message } = data;
+                    
+                    // Update progress bar
+                    progressBar.style.width = progress + '%';
+                    progressPercent.textContent = Math.floor(progress) + '%';
+                    progressStatus.textContent = message;
+                    
+                    // Update time estimate (rough estimate based on progress)
+                    if (progress < 100) {
+                        const estimatedTotal = prefix === 'cv' ? 30 : prefix === 'vd' ? 35 : 40;
+                        const remaining = Math.ceil((100 - progress) / 100 * estimatedTotal);
+                        progressTime.textContent = `~${remaining}s remaining`;
+                    } else {
+                        progressTime.textContent = 'Complete!';
+                    }
+                    
+                    // Update stage indicators
+                    const stageId = stageMapping[stage];
+                    if (stageId && stageId > lastStage) {
+                        // Complete previous stages
+                        for (let i = lastStage + 1; i < stageId; i++) {
+                            const prevStage = document.getElementById(`${prefix}-stage-${i}`);
+                            if (prevStage) {
+                                prevStage.classList.remove('active');
+                                prevStage.classList.add('completed');
+                                prevStage.querySelector('.stage-icon')?.classList.remove('loading');
+                            }
+                        }
+                        
+                        // Activate current stage
+                        const currentStageElement = document.getElementById(`${prefix}-stage-${stageId}`);
+                        if (currentStageElement) {
+                            currentStageElement.classList.add('active');
+                            currentStageElement.querySelector('.stage-icon')?.classList.add('loading');
+                        }
+                        
+                        lastStage = stageId;
+                    }
+                    
+                    // Handle completion
+                    if (progress >= 100 || stage === 'complete') {
+                        // Complete all stages
+                        for (let i = 1; i <= 4; i++) {
+                            const stageElement = document.getElementById(`${prefix}-stage-${i}`);
+                            if (stageElement) {
+                                stageElement.classList.remove('active');
+                                stageElement.classList.add('completed');
+                                stageElement.querySelector('.stage-icon')?.classList.remove('loading');
+                            }
+                        }
+                        cleanup();
+                    }
+                    
+                    // Handle errors
+                    if (stage === 'error') {
+                        cleanup();
+                    }
+                    
+                } catch (e) {
+                    console.error('Error parsing progress data:', e);
+                }
+            };
+            
+            eventSource.onerror = (error) => {
+                console.error('SSE connection error:', error);
+                cleanup();
+            };
+            
+            return { cleanup };
+        }
+
+        function simulateProgress(prefix, estimatedTime) {
+            const progressContainer = document.getElementById(`${prefix}-progress`);
+            const progressBar = document.getElementById(`${prefix}-progress-bar`);
+            const progressPercent = document.getElementById(`${prefix}-progress-percent`);
+            const progressTime = document.getElementById(`${prefix}-progress-time`);
+            const progressStatus = document.getElementById(`${prefix}-progress-status`);
+            
+            progressContainer.classList.add('active');
+            
+            const stages = [
+                { id: 1, percent: 25, time: estimatedTime * 0.25, status: 'Loading model...' },
+                { id: 2, percent: 50, time: estimatedTime * 0.5, status: 'Processing...' },
+                { id: 3, percent: 75, time: estimatedTime * 0.25, status: 'Generating audio...' },
+                { id: 4, percent: 95, time: estimatedTime * 0.1, status: 'Finalizing...' }
+            ];
+            
+            let currentProgress = 0;
+            let stageIndex = 0;
+            const startTime = Date.now();
+            
+            const updateProgress = () => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const remaining = Math.max(0, estimatedTime - elapsed);
+                
+                // Update time display
+                if (remaining > 0) {
+                    progressTime.textContent = `~${Math.ceil(remaining)}s remaining`;
+                } else {
+                    progressTime.textContent = 'Almost done...';
+                }
+                
+                // Update progress based on stages
+                if (stageIndex < stages.length) {
+                    const stage = stages[stageIndex];
+                    const stageElement = document.getElementById(`${prefix}-stage-${stage.id}`);
+                    
+                    // Mark current stage as active
+                    stageElement.classList.add('active');
+                    const icon = stageElement.querySelector('.stage-icon');
+                    icon.classList.add('loading');
+                    
+                    // Update status
+                    progressStatus.textContent = stage.status;
+                    
+                    // Animate progress bar
+                    currentProgress += (stage.percent - currentProgress) * 0.1;
+                    progressBar.style.width = currentProgress + '%';
+                    progressPercent.textContent = Math.floor(currentProgress) + '%';
+                    
+                    // Move to next stage
+                    if (currentProgress >= stage.percent - 5) {
+                        stageElement.classList.remove('active');
+                        stageElement.classList.add('completed');
+                        icon.classList.remove('loading');
+                        stageIndex++;
+                    }
+                }
+                
+                // Continue animation
+                if (currentProgress < 95) {
+                    requestAnimationFrame(updateProgress);
+                }
+            };
+            
+            updateProgress();
+            
+            return {
+                complete: () => {
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressStatus.textContent = 'Complete!';
+                    progressTime.textContent = 'Done';
+                    
+                    // Mark all stages as completed
+                    stages.forEach(stage => {
+                        const stageElement = document.getElementById(`${prefix}-stage-${stage.id}`);
+                        stageElement.classList.remove('active');
+                        stageElement.classList.add('completed');
+                        stageElement.querySelector('.stage-icon').classList.remove('loading');
+                    });
+                    
+                    setTimeout(() => {
+                        progressContainer.classList.remove('active');
+                    }, 1500);
+                }
+            };
+        }
+
+        async function generateCustomVoice() {
+            const text = document.getElementById('cv-text').value.trim();
+            const speaker = document.getElementById('cv-speaker').value;
+            const language = document.getElementById('cv-language').value;
+            const instruct = document.getElementById('cv-instruct').value.trim();
+
+            if (!text) {
+                showResult('cv-result', '', 'Please enter text to synthesize', true);
+                return;
+            }
+
+            const result = document.getElementById('cv-result');
+            result.innerHTML = '';
+
+            // Generate session ID for progress tracking
+            const sessionId = 'cv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Start real-time progress
+            const progressTracker = startRealTimeProgress('cv', sessionId);
+
+            try {
+                // Send request with session_id as form data
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('speaker', speaker);
+                formData.append('language', language === 'Auto' ? '' : language);
+                if (instruct) formData.append('instruct', instruct);
+                formData.append('session_id', sessionId);
+
+                const response = await fetch(`${API_BASE}/api/tts/custom-voice`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Generation failed');
+                }
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('cv-result', audioUrl, 'Your audio has been generated successfully!');
+                }, 1000);
+            } catch (error) {
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('cv-result', '', `Error: ${error.message}`, true);
+                }, 500);
+            }
+        }
+
+        async function generateVoiceDesign() {
+            const text = document.getElementById('vd-text').value.trim();
+            const language = document.getElementById('vd-language').value;
+            const instruct = document.getElementById('vd-instruct').value.trim();
+
+            if (!text || !instruct) {
+                showResult('vd-result', '', 'Please enter both text and voice description', true);
+                return;
+            }
+
+            const result = document.getElementById('vd-result');
+            result.innerHTML = '';
+
+            // Generate session ID for progress tracking
+            const sessionId = 'vd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Start real-time progress
+            const progressTracker = startRealTimeProgress('vd', sessionId);
+
+            try {
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('language', language === 'Auto' ? '' : language);
+                formData.append('instruct', instruct);
+                formData.append('session_id', sessionId);
+
+                const response = await fetch(`${API_BASE}/api/tts/voice-design`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Generation failed');
+                }
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('vd-result', audioUrl, 'Voice designed and generated successfully!');
+                }, 1000);
+            } catch (error) {
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('vd-result', '', `Error: ${error.message}`, true);
+                }, 500);
+            }
+        }
+
+        async function generateVoiceClone() {
+            const audioFile = document.getElementById('vc-audio').files[0];
+            const refText = document.getElementById('vc-ref-text').value.trim();
+            const xvectorOnly = document.getElementById('vc-xvector').checked;
+            const text = document.getElementById('vc-text').value.trim();
+            const language = document.getElementById('vc-language').value;
+
+            if (!audioFile) {
+                showResult('vc-result', '', 'Please select a reference audio file', true);
+                return;
+            }
+
+            if (!text) {
+                showResult('vc-result', '', 'Please enter text to synthesize', true);
+                return;
+            }
+
+            if (!xvectorOnly && !refText) {
+                showResult('vc-result', '', 'Please enter reference text or enable X-Vector only mode', true);
+                return;
+            }
+
+            const result = document.getElementById('vc-result');
+            result.innerHTML = '';
+
+            // Generate session ID for progress tracking
+            const sessionId = 'vc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Start real-time progress
+            const progressTracker = startRealTimeProgress('vc', sessionId);
+
+            try {
+                const formData = new FormData();
+                formData.append('ref_audio', audioFile);
+                formData.append('text', text);
+                formData.append('language', language === 'Auto' ? '' : language);
+                formData.append('ref_text', refText);
+                formData.append('x_vector_only', xvectorOnly);
+                formData.append('session_id', sessionId);
+
+                const response = await fetch(`${API_BASE}/api/tts/voice-clone`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Generation failed');
+                }
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('vc-result', audioUrl, 'Voice cloned and speech generated successfully!');
+                }, 1000);
+            } catch (error) {
+                progressTracker.cleanup();
+                setTimeout(() => {
+                    showResult('vc-result', '', `Error: ${error.message}`, true);
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>
