@@ -1,16 +1,19 @@
 """
-Configuration Loader
-Loads and manages application configuration from YAML and environment variables
+Configuration Loader (Runtime Concern)
+Loads and merges YAML + environment variables
+Directory creation removed - handled by runtime
 """
 
 import yaml
 import os
+import torch
 from pathlib import Path
 from typing import Dict, Any
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
 
 def load_config(config_path: str = "./config.yaml") -> Dict[str, Any]:
     """
@@ -25,7 +28,7 @@ def load_config(config_path: str = "./config.yaml") -> Dict[str, Any]:
     # Load YAML config
     config_file = Path(config_path)
     if not config_file.exists():
-        # Use relative path from backend directory
+        # Use relative path from project root
         config_file = Path(__file__).parent.parent / "config.yaml"
     
     with open(config_file, 'r', encoding='utf-8') as f:
@@ -35,23 +38,16 @@ def load_config(config_path: str = "./config.yaml") -> Dict[str, Any]:
     if os.getenv('APP_HOST'):
         config['app']['host'] = os.getenv('APP_HOST')
     if os.getenv('APP_PORT'):
-        config['app']['port'] = int(os.getenv('APP_PORT'))
+        port_str = os.getenv('APP_PORT')
+        if port_str:
+            config['app']['port'] = int(port_str)
     if os.getenv('MODEL_CACHE_DIR'):
         config['models']['cache_dir'] = os.getenv('MODEL_CACHE_DIR')
     if os.getenv('DEFAULT_MODEL_SIZE'):
         config['models']['default_size'] = os.getenv('DEFAULT_MODEL_SIZE')
     
-    # Ensure directories exist
-    model_cache_dir = Path(config['models']['cache_dir'])
-    model_cache_dir.mkdir(parents=True, exist_ok=True)
-    
-    outputs_dir = Path("./outputs")
-    outputs_dir.mkdir(parents=True, exist_ok=True)
-    
-    voice_prompts_dir = Path("./voice_prompts")
-    voice_prompts_dir.mkdir(parents=True, exist_ok=True)
-    
     return config
+
 
 def get_device_config() -> Dict[str, Any]:
     """
@@ -60,8 +56,6 @@ def get_device_config() -> Dict[str, Any]:
     Returns:
         Dictionary with device settings
     """
-    import torch
-    
     use_gpu = os.getenv('USE_GPU', 'auto')
     
     if use_gpu == 'auto':
@@ -91,3 +85,25 @@ def get_device_config() -> Dict[str, Any]:
         'dtype': dtype,
         'use_flash_attn': flash_attn_available
     }
+
+
+def create_directories(config: Dict[str, Any]):
+    """
+    Create necessary directories (runtime initialization)
+    
+    Args:
+        config: Configuration dictionary
+    """
+    # Model cache directory
+    model_cache_dir = Path(config['models']['cache_dir'])
+    model_cache_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Output directories (for LocalStorage)
+    outputs_dir = Path("./outputs")
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+    
+    temp_dir = Path("./temp_audio")
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    
+    voice_prompts_dir = Path("./voice_prompts")
+    voice_prompts_dir.mkdir(parents=True, exist_ok=True)

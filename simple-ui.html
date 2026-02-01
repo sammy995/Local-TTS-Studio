@@ -397,6 +397,27 @@
             cursor: not-allowed;
         }
 
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--accent);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--accent);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 4px 0 rgba(171, 246, 45, 0.3);
+            transform: translateY(-1px);
+        }
+
         .audio-player {
             margin-top: 2rem;
             padding: 1.5rem;
@@ -1106,6 +1127,13 @@
                         </svg>
                         <span>Voice Clone</span>
                     </button>
+                    <button class="tab" onclick="switchTab(3)">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                        </svg>
+                        <span>Podcast Mode</span>
+                    </button>
                 </nav>
             </div>
 
@@ -1430,6 +1458,83 @@
 
                     <div id="vc-result"></div>
                 </div>
+
+                <!-- Podcast Mode Tab -->
+                <div class="tab-content" id="tab3">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Podcast Mode</h2>
+                        <p class="tab-description">Create multi-speaker podcasts with natural conversation flow</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="podcast-title">Project Title *</label>
+                        <input type="text" id="podcast-title" 
+                               placeholder="My Podcast Episode" 
+                               value="Demo Podcast"
+                               title="Give your podcast project a memorable name">
+                    </div>
+
+                    <!-- Speakers Section -->
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <label style="margin: 0;">👥 Speakers <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Max 10)</span></label>
+                            <button type="button" class="btn-secondary" onclick="addSpeaker()" title="Add a new voice actor to your podcast">
+                                + Add Speaker
+                            </button>
+                        </div>
+                        <div id="speakers-list"></div>
+                    </div>
+
+                    <!-- Script Section -->
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <label style="margin: 0;">📝 Script <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Conversation flow)</span></label>
+                            <button type="button" class="btn-secondary" onclick="addSegment()" title="Add a new line of dialogue">
+                                + Add Line
+                            </button>
+                        </div>
+                        <div id="segments-list"></div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="form-group" style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 4px; padding: 1rem;">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="podcast-deterministic" checked>
+                            <label for="podcast-deterministic" title="Enable for consistent output every time you render. Disable for more variation.">
+                                ✓ Deterministic Mode <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500; margin-left: 0.5rem;">(Recommended)</span>
+                            </label>
+                        </div>
+                        <p style="margin: 0.5rem 0 0 1.75rem; font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 400; line-height: 1.4;">Same script will produce identical audio each time</p>
+                    </div>
+
+                    <button class="btn" onclick="generatePodcast()">
+                        <span>🎙️ Render Podcast</span>
+                    </button>
+
+                    <div class="progress-container" id="podcast-progress">
+                        <div class="progress-header">
+                            <div class="progress-status">
+                                <svg class="progress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                <span id="podcast-progress-status">Rendering segments...</span>
+                            </div>
+                            <div class="progress-time" id="podcast-progress-time">Processing</div>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="podcast-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-percentage" id="podcast-progress-percent">0%</div>
+                    </div>
+
+                    <div class="loading" id="podcast-loading">
+                        <div class="spinner"></div>
+                        <p>Compiling podcast...</p>
+                    </div>
+
+                    <div id="podcast-result"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1439,6 +1544,367 @@
 
         // Load system info on page load
         loadSystemInfo();
+
+        // Podcast Mode state
+        let speakers = [];
+        let segments = [];
+        let speakerCounter = 0;
+        let segmentCounter = 0;
+
+        // Initialize podcast mode with demo data
+        function initPodcastMode() {
+            speakers = [];
+            segments = [];
+            speakerCounter = 0;
+            segmentCounter = 0;
+            
+            // Add two demo speakers (use valid voice IDs: vivian, serena, ryan, aiden, etc.)
+            addSpeaker('Host', 'custom', {voice_id: 'vivian'}, 'cheerful and engaging');
+            addSpeaker('Guest', 'custom', {voice_id: 'ryan'}, 'calm and thoughtful');
+            
+            // Add demo segments
+            addSegment(speakers[0].id, 'Welcome to our podcast!', 10);
+            addSegment(speakers[1].id, 'Thanks for having me on the show.', 20);
+        }
+
+        function addSpeaker(name = '', mode = 'custom', config = {voice_id: 'vivian'}, style = '') {
+            const speaker = {
+                id: `speaker_${++speakerCounter}`,
+                name: name || `Speaker ${speakerCounter}`,
+                mode: mode,
+                config: config,
+                style_instruction: style
+            };
+            speakers.push(speaker);
+            renderSpeakers();
+            return speaker;
+        }
+
+        function removeSpeaker(id) {
+            speakers = speakers.filter(s => s.id !== id);
+            // Remove segments using this speaker
+            segments = segments.filter(seg => seg.speaker_id !== id);
+            renderSpeakers();
+            renderSegments();
+        }
+
+        function renderSpeakers() {
+            const container = document.getElementById('speakers-list');
+            if (speakers.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-tertiary); font-style: italic;">No speakers added yet</p>';
+                return;
+            }
+
+            container.innerHTML = speakers.map((speaker, idx) => `
+                <div class="speaker-card" style="background: var(--bg-card); border-left: 4px solid var(--accent-purple); border-radius: 4px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+                            <span style="background: var(--accent-purple); color: var(--primary); font-weight: 900; padding: 0.25rem 0.625rem; border-radius: 4px; font-size: 0.8125rem;">${idx + 1}</span>
+                            <input type="text" value="${speaker.name}" 
+                                   onchange="updateSpeakerName('${speaker.id}', this.value)"
+                                   style="flex: 1; font-weight: 700; font-size: 1.125rem; background: transparent; border: none; border-bottom: 2px solid var(--border); color: var(--text-primary); padding: 0.375rem 0;"
+                                   placeholder="Speaker name (e.g., Host, Guest)"
+                                   title="Give this speaker a memorable name">
+                        </div>
+                        <button onclick="removeSpeaker('${speaker.id}')" 
+                                style="background: transparent; border: 2px solid var(--error); color: var(--error); padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.8125rem; transition: all 0.2s;"
+                                onmouseover="this.style.background='var(--error)'; this.style.color='white';"
+                                onmouseout="this.style.background='transparent'; this.style.color='var(--error)';"
+                                title="Remove this speaker">✕</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Voice Type</label>
+                            <select onchange="updateSpeakerMode('${speaker.id}', this.value)" 
+                                    style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-weight: 600;"
+                                    title="Choose how to generate this speaker's voice">
+                                <option value="custom" ${speaker.mode === 'custom' ? 'selected' : ''}>🎭 Preset Voice</option>
+                                <option value="design" ${speaker.mode === 'design' ? 'selected' : ''}>✨ Design Voice</option>
+                                <option value="clone" ${speaker.mode === 'clone' ? 'selected' : ''}>🎙️ Clone Voice</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+                                ${speaker.mode === 'custom' ? 'Voice Selection' : speaker.mode === 'design' ? 'Voice Description' : 'Cloned Voice ID'}
+                            </label>
+                            ${speaker.mode === 'custom' ? `
+                                <select onchange="updateSpeakerConfig('${speaker.id}', '${speaker.mode}', this.value)"
+                                        style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-weight: 600;"
+                                        title="Choose from available preset voices">
+                                    <option value="Vivian" ${(speaker.config.voice_id || 'vivian').toLowerCase() === 'vivian' ? 'selected' : ''}>Vivian - Bright young female (Chinese)</option>
+                                    <option value="Serena" ${(speaker.config.voice_id || '').toLowerCase() === 'serena' ? 'selected' : ''}>Serena - Warm gentle female (Chinese)</option>
+                                    <option value="Uncle_Fu" ${(speaker.config.voice_id || '').toLowerCase() === 'uncle_fu' ? 'selected' : ''}>Uncle Fu - Seasoned male (Chinese)</option>
+                                    <option value="Dylan" ${(speaker.config.voice_id || '').toLowerCase() === 'dylan' ? 'selected' : ''}>Dylan - Beijing male (Chinese Dialect)</option>
+                                    <option value="Eric" ${(speaker.config.voice_id || '').toLowerCase() === 'eric' ? 'selected' : ''}>Eric - Chengdu male (Sichuan Dialect)</option>
+                                    <option value="Ryan" ${(speaker.config.voice_id || '').toLowerCase() === 'ryan' ? 'selected' : ''}>Ryan - Dynamic male (English)</option>
+                                    <option value="Aiden" ${(speaker.config.voice_id || '').toLowerCase() === 'aiden' ? 'selected' : ''}>Aiden - American male (English)</option>
+                                    <option value="Ono_Anna" ${(speaker.config.voice_id || '').toLowerCase() === 'ono_anna' ? 'selected' : ''}>Ono Anna - Playful female (Japanese)</option>
+                                    <option value="Sohee" ${(speaker.config.voice_id || '').toLowerCase() === 'sohee' ? 'selected' : ''}>Sohee - Warm female (Korean)</option>
+                                </select>
+                            ` : `
+                                <input type="text" 
+                                       value="${speaker.mode === 'design' ? speaker.config.description || '' : speaker.config.prompt_id || ''}"
+                                       onchange="updateSpeakerConfig('${speaker.id}', '${speaker.mode}', this.value)"
+                                       style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
+                                       placeholder="${speaker.mode === 'design' ? 'young energetic female voice' : 'your_saved_voice_id'}"
+                                       title="${speaker.mode === 'design' ? 'Describe the voice characteristics you want' : 'Use a previously cloned voice ID'}">
+                            `}
+                        </div>
+                    </div>
+                    <details style="margin-top: 0.75rem;">
+                        <summary style="cursor: pointer; font-size: 0.8125rem; color: var(--accent); font-weight: 600; user-select: none;">⚙️ Advanced Settings (Optional)</summary>
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Emotional Style</label>
+                            <input type="text" value="${speaker.style_instruction || ''}"
+                                   onchange="updateSpeakerStyle('${speaker.id}', this.value)"
+                                   style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
+                                   placeholder="cheerful, serious, excited, calm..."
+                                   title="Add emotional style instructions (e.g., cheerful and engaging, serious and professional)">
+                        </div>
+                    </details>
+                </div>
+            `).join('');
+        }
+
+        function addSegment(speakerId = '', text = '', order = null) {
+            if (speakers.length === 0) {
+                alert('Please add at least one speaker first');
+                return;
+            }
+
+            const segment = {
+                id: `seg_${++segmentCounter}`,
+                order: order !== null ? order : (segments.length + 1) * 10,
+                speaker_id: speakerId || speakers[0].id,
+                text: text || '',
+                pause_after_ms: 500,
+                volume: 1.0,
+                emotion: null
+            };
+            segments.push(segment);
+            segments.sort((a, b) => a.order - b.order);
+            renderSegments();
+            return segment;
+        }
+
+        function removeSegment(id) {
+            segments = segments.filter(s => s.id !== id);
+            renderSegments();
+        }
+
+        function renderSegments() {
+            const container = document.getElementById('segments-list');
+            if (segments.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-tertiary); font-style: italic;">No segments added yet</p>';
+                return;
+            }
+
+            container.innerHTML = segments.map((segment, idx) => {
+                const speaker = speakers.find(s => s.id === segment.speaker_id);
+                return `
+                <div class="segment-card" style="background: var(--bg-card); border-left: 4px solid var(--accent); border-radius: 4px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.875rem;">
+                        <div style="display: flex; align-items: center; gap: 0.875rem; flex: 1;">
+                            <input type="number" value="${segment.order}" 
+                                   onchange="updateSegmentOrder('${segment.id}', parseInt(this.value))"
+                                   style="width: 65px; padding: 0.5rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-weight: 700; text-align: center;"
+                                   title="Line order number (allows gaps like 10, 20, 30 for easy reordering)">
+                            <select onchange="updateSegmentSpeaker('${segment.id}', this.value)"
+                                    style="flex: 1; padding: 0.625rem; background: var(--accent-purple); border: 2px solid var(--accent-purple-dark); border-radius: 4px; color: var(--primary); font-weight: 700;"
+                                    title="Who speaks this line?">
+                                ${speakers.map(s => `<option value="${s.id}" ${s.id === segment.speaker_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <button onclick="removeSegment('${segment.id}')" 
+                                style="background: transparent; border: 2px solid var(--error); color: var(--error); padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.8125rem; transition: all 0.2s;"
+                                onmouseover="this.style.background='var(--error)'; this.style.color='white';"
+                                onmouseout="this.style.background='transparent'; this.style.color='var(--error)';"
+                                title="Remove this line">✕</button>
+                    </div>
+                    <textarea onchange="updateSegmentText('${segment.id}', this.value)"
+                              style="width: 100%; min-height: 90px; padding: 0.875rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical; font-size: 0.9375rem; line-height: 1.5;"
+                              placeholder="What does ${speaker ? speaker.name : 'this speaker'} say?"
+                              title="Enter the dialogue text for this line">${segment.text}</textarea>
+                    <details style="margin-top: 0.75rem;">
+                        <summary style="cursor: pointer; font-size: 0.8125rem; color: var(--accent); font-weight: 600; user-select: none;">⚙️ Timing & Volume</summary>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Pause After</label>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="number" value="${segment.pause_after_ms}"
+                                           onchange="updateSegmentPause('${segment.id}', parseInt(this.value))"
+                                           style="flex: 1; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
+                                           title="Silence duration after this line in milliseconds">
+                                    <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600;">ms</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Volume</label>
+                                <input type="number" step="0.1" min="0" max="2" value="${segment.volume}"
+                                       onchange="updateSegmentVolume('${segment.id}', parseFloat(this.value))"
+                                       style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
+                                       title="Volume multiplier (1.0 = normal, 0.5 = half, 2.0 = double)">
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            `}).join('');
+        }
+
+        // Update functions for speakers
+        function updateSpeakerName(id, value) {
+            const speaker = speakers.find(s => s.id === id);
+            if (speaker) speaker.name = value;
+            renderSegments(); // Re-render segments to update speaker names in dropdowns
+        }
+
+        function updateSpeakerMode(id, mode) {
+            const speaker = speakers.find(s => s.id === id);
+            if (speaker) {
+                speaker.mode = mode;
+                // Reset config based on mode
+                if (mode === 'custom') speaker.config = {voice_id: 'Female-1'};
+                else if (mode === 'design') speaker.config = {description: ''};
+                else if (mode === 'clone') speaker.config = {prompt_id: ''};
+                renderSpeakers();
+            }
+        }
+
+        function updateSpeakerConfig(id, mode, value) {
+            const speaker = speakers.find(s => s.id === id);
+            if (speaker) {
+                if (mode === 'custom') speaker.config.voice_id = value;
+                else if (mode === 'design') speaker.config.description = value;
+                else if (mode === 'clone') speaker.config.prompt_id = value;
+            }
+        }
+
+        function updateSpeakerStyle(id, value) {
+            const speaker = speakers.find(s => s.id === id);
+            if (speaker) speaker.style_instruction = value || null;
+        }
+
+        // Update functions for segments
+        function updateSegmentOrder(id, order) {
+            const segment = segments.find(s => s.id === id);
+            if (segment) {
+                segment.order = order;
+                segments.sort((a, b) => a.order - b.order);
+                renderSegments();
+            }
+        }
+
+        function updateSegmentSpeaker(id, speakerId) {
+            const segment = segments.find(s => s.id === id);
+            if (segment) segment.speaker_id = speakerId;
+        }
+
+        function updateSegmentText(id, text) {
+            const segment = segments.find(s => s.id === id);
+            if (segment) segment.text = text;
+        }
+
+        function updateSegmentPause(id, pause) {
+            const segment = segments.find(s => s.id === id);
+            if (segment) segment.pause_after_ms = pause;
+        }
+
+        function updateSegmentVolume(id, volume) {
+            const segment = segments.find(s => s.id === id);
+            if (segment) segment.volume = volume;
+        }
+
+        async function generatePodcast() {
+            const title = document.getElementById('podcast-title').value.trim();
+            const deterministic = document.getElementById('podcast-deterministic').checked;
+
+            if (!title) {
+                showResult('podcast-result', '', 'Please enter a project title', true);
+                return;
+            }
+
+            if (speakers.length === 0) {
+                showResult('podcast-result', '', 'Please add at least one speaker', true);
+                return;
+            }
+
+            if (segments.length === 0) {
+                showResult('podcast-result', '', 'Please add at least one segment', true);
+                return;
+            }
+
+            // Validate segments have text
+            const emptySegments = segments.filter(s => !s.text.trim());
+            if (emptySegments.length > 0) {
+                showResult('podcast-result', '', 'All segments must have text', true);
+                return;
+            }
+
+            const result = document.getElementById('podcast-result');
+            result.innerHTML = '';
+
+            // Show progress
+            const progressContainer = document.getElementById('podcast-progress');
+            progressContainer.style.display = 'block';
+            const progressBar = document.getElementById('podcast-progress-bar');
+            const progressPercent = document.getElementById('podcast-progress-percent');
+            const progressStatus = document.getElementById('podcast-progress-status');
+
+            try {
+                const project = {
+                    id: 'podcast_' + Date.now(),
+                    title: title,
+                    speakers: speakers.map(s => ({
+                        id: s.id,
+                        name: s.name,
+                        mode: s.mode,
+                        config: s.config,
+                        style_instruction: s.style_instruction
+                    })),
+                    segments: segments.map(s => ({
+                        id: s.id,
+                        order: s.order,
+                        speaker_id: s.speaker_id,
+                        text: s.text,
+                        pause_after_ms: s.pause_after_ms,
+                        volume: s.volume,
+                        emotion: s.emotion
+                    })),
+                    output_format: 'wav',
+                    target_sample_rate: 44100,
+                    deterministic: deterministic
+                };
+
+                progressStatus.textContent = `Rendering ${segments.length} segments...`;
+                
+                const response = await fetch(`${API_BASE}/api/podcast/render`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(project)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Podcast generation failed');
+                }
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                progressContainer.style.display = 'none';
+                showResult('podcast-result', audioUrl, `✓ Podcast rendered successfully! (${segments.length} segments, ${speakers.length} speakers)`);
+            } catch (error) {
+                progressContainer.style.display = 'none';
+                showResult('podcast-result', '', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Initialize podcast mode when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            initPodcastMode();
+        });
 
         function switchTab(index) {
             // Remove active class from all tabs and contents
