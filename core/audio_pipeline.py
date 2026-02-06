@@ -65,6 +65,37 @@ def to_wav_bytes(
     return buffer.read()
 
 
+def to_mp3_bytes(
+    audio: np.ndarray,
+    sample_rate: int,
+    target_sr: int = 44100,
+    bitrate: str = "192k"
+) -> bytes:
+    """
+    Convert audio array to MP3 bytes via pydub.
+
+    Args:
+        audio: Audio waveform as numpy array
+        sample_rate: Source sample rate
+        target_sr: Target sample rate (default 44.1kHz)
+        bitrate: MP3 bitrate (default 192k)
+
+    Returns:
+        MP3 audio as bytes
+    """
+    from pydub import AudioSegment as PydubSegment
+
+    # Get WAV bytes first (resampled + normalised)
+    wav_bytes = to_wav_bytes(audio, sample_rate, target_sr)
+
+    # Convert WAV → MP3
+    segment = PydubSegment.from_wav(io.BytesIO(wav_bytes))
+    mp3_buffer = io.BytesIO()
+    segment.export(mp3_buffer, format="mp3", bitrate=bitrate)
+    mp3_buffer.seek(0)
+    return mp3_buffer.read()
+
+
 def resample(
     audio: np.ndarray,
     orig_sr: int,

@@ -456,6 +456,8 @@ async def save_voice_prompt(
         # Process reference audio
         temp_path = storage.get_temp_path(f"{uuid.uuid4()}_{ref_audio.filename}")
         temp_path.write_bytes(await ref_audio.read())
+        # Convert to WAV if needed (TTS engine requires WAV)
+        temp_path = _ensure_wav(temp_path)
         
         # Create voice prompt
         prompt_path = service.create_voice_prompt(
@@ -496,6 +498,33 @@ async def download_audio(filename: str):
 
 # ===== PODCAST HELPERS =====
 
+def _ensure_wav(file_path: Path) -> Path:
+    """
+    Ensure the audio file is in WAV format.
+    If it's MP3, M4A, OGG, etc. — convert to WAV via pydub.
+    Returns the (possibly new) WAV path.
+    """
+    suffix = file_path.suffix.lower()
+    if suffix == '.wav':
+        return file_path
+    
+    try:
+        from pydub import AudioSegment as PydubSegment
+        audio_seg = PydubSegment.from_file(str(file_path))
+        wav_path = file_path.with_suffix('.wav')
+        audio_seg.export(str(wav_path), format='wav')
+        # Remove original non-wav temp file
+        try:
+            file_path.unlink()
+        except Exception:
+            pass
+        logger.info(f"Converted {suffix} → .wav: {wav_path}")
+        return wav_path
+    except Exception as e:
+        logger.warning(f"Could not convert {suffix} to WAV ({e}), passing as-is")
+        return file_path
+
+
 def _resolve_clone_speakers(speakers_list, storage_obj):
     """
     For clone-mode speakers that carry base64 reference audio,
@@ -515,13 +544,38 @@ def _resolve_clone_speakers(speakers_list, storage_obj):
         if not b64_data:
             continue
         
-        # Strip data URI prefix: "data:audio/wav;base64,AAAA..."
-        if ',' in b64_data:
-            b64_data = b64_data.split(',', 1)[1]
+        # Detect format from data URI prefix: "data:audio/mpeg;base64,..."
+        ext = '.wav'
+        raw_b64 = b64_data
+        if ',' in raw_b64:
+            header = raw_b64.split(',', 1)[0].lower()
+            raw_b64 = raw_b64.split(',', 1)[1]
+            if 'audio/mpeg' in header or 'audio/mp3' in header:
+                ext = '.mp3'
+            elif 'audio/mp4' in header or 'audio/m4a' in header:
+                ext = '.m4a'
+            elif 'audio/ogg' in header:
+                ext = '.ogg'
+            elif 'audio/flac' in header:
+                ext = '.flac'
         
-        audio_bytes = b64mod.b64decode(b64_data)
-        temp_path = storage_obj.get_temp_path(f"{uuid.uuid4()}_clone_ref.wav")
+        # Also check the original filename stored in config
+        orig_name = (cfg.get('ref_audio_name') or '').lower()
+        if orig_name.endswith('.mp3'):
+            ext = '.mp3'
+        elif orig_name.endswith('.m4a'):
+            ext = '.m4a'
+        elif orig_name.endswith('.ogg'):
+            ext = '.ogg'
+        elif orig_name.endswith('.flac'):
+            ext = '.flac'
+        
+        audio_bytes = b64mod.b64decode(raw_b64)
+        temp_path = storage_obj.get_temp_path(f"{uuid.uuid4()}_clone_ref{ext}")
         temp_path.write_bytes(audio_bytes)
+        
+        # Convert to WAV if needed (TTS engine requires WAV)
+        temp_path = _ensure_wav(temp_path)
         temp_paths.append(temp_path)
         
         # Replace config: remove base64 blob, set file path
@@ -682,23 +736,27 @@ async def render_podcast(request: Request):
             logger.info(f"Concatenated {total_segments} segments: {total_length} samples")
             
             # Encode
-            from core.audio_pipeline import to_wav_bytes
+            from core.audio_pipeline import to_wav_bytes, to_mp3_bytes
             if sample_rate is None:
                 raise RuntimeError("No audio generated - sample_rate is None")
             
-            audio_bytes = to_wav_bytes(final_array, sample_rate, project.target_sample_rate)
+            fmt = project.output_format or 'mp3'
+            if fmt == 'mp3':
+                audio_bytes = to_mp3_bytes(final_array, sample_rate, project.target_sample_rate)
+                media_type = 'audio/mpeg'
+            else:
+                audio_bytes = to_wav_bytes(final_array, sample_rate, project.target_sample_rate)
+                media_type = 'audio/wav'
             
             # Save
-            filename = f"podcast_{project.id}.{project.output_format}"
+            filename = f"podcast_{project.id}.{fmt}"
             file_path = storage.save_audio(audio_bytes, filename)
-            
-            logger.info(f"Podcast saved: {file_path}")
             
             logger.info(f"Podcast rendered: {file_path}")
             
             return FileResponse(
                 path=file_path,
-                media_type="audio/wav",
+                media_type=media_type,
                 filename=Path(file_path).name
             )
         finally:
@@ -1103,10 +1161,15 @@ async def render_podcast_v3(request: Request):
             )
             
             # === Phase 6: Encode and save ===
-            audio_bytes = to_wav_bytes(final_audio, engine_sr, target_sr)
+            fmt = project_dict.get('output_format', 'mp3')
+            if fmt == 'mp3':
+                from core.audio_pipeline import to_mp3_bytes
+                audio_bytes = to_mp3_bytes(final_audio, engine_sr, target_sr)
+            else:
+                audio_bytes = to_wav_bytes(final_audio, engine_sr, target_sr)
             
             project_id = project_dict.get('id', uuid.uuid4().hex[:8])
-            filename = f"podcast_{project_id}.wav"
+            filename = f"podcast_{project_id}.{fmt}"
             file_path = storage.save_audio(audio_bytes, filename)
             
             # Build segment timing metadata for timeline UI
@@ -1122,7 +1185,7 @@ async def render_podcast_v3(request: Request):
             
             return FileResponse(
                 path=file_path,
-                media_type="audio/wav",
+                media_type='audio/mpeg' if fmt == 'mp3' else 'audio/wav',
                 filename=Path(file_path).name,
                 headers={
                     'X-Segment-Timings': json.dumps(segment_timings),
@@ -1167,6 +1230,8 @@ async def process_ref_audio_input(
         # Save uploaded file
         temp_path = storage.get_temp_path(f"{uuid.uuid4()}_{file.filename}")
         temp_path.write_bytes(await file.read())
+        # Convert to WAV if needed (TTS engine requires WAV)
+        temp_path = _ensure_wav(temp_path)
         return str(temp_path)
     
     if url:
@@ -1176,8 +1241,17 @@ async def process_ref_audio_input(
             response = requests.get(url, timeout=30)
             response.raise_for_status()
             
-            temp_path = storage.get_temp_path(f"{uuid.uuid4()}_from_url.wav")
+            # Detect extension from URL
+            from urllib.parse import urlparse
+            url_path = urlparse(url).path.lower()
+            ext = '.wav'
+            for e in ['.mp3', '.m4a', '.ogg', '.flac', '.wav']:
+                if url_path.endswith(e):
+                    ext = e
+                    break
+            temp_path = storage.get_temp_path(f"{uuid.uuid4()}_from_url{ext}")
             temp_path.write_bytes(response.content)
+            temp_path = _ensure_wav(temp_path)
             return str(temp_path)
             
         except Exception as e:
@@ -1187,12 +1261,21 @@ async def process_ref_audio_input(
         # Decode base64 audio
         import base64
         try:
+            ext = '.wav'
             if "," in base64_data:
+                header = base64_data.split(",")[0].lower()
                 base64_data = base64_data.split(",")[1]
+                if 'audio/mpeg' in header or 'audio/mp3' in header:
+                    ext = '.mp3'
+                elif 'audio/mp4' in header or 'audio/m4a' in header:
+                    ext = '.m4a'
+                elif 'audio/ogg' in header:
+                    ext = '.ogg'
             
             audio_bytes = base64.b64decode(base64_data)
-            temp_path = storage.get_temp_path(f"{uuid.uuid4()}_from_base64.wav")
+            temp_path = storage.get_temp_path(f"{uuid.uuid4()}_from_base64{ext}")
             temp_path.write_bytes(audio_bytes)
+            temp_path = _ensure_wav(temp_path)
             return str(temp_path)
             
         except Exception as e:

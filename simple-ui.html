@@ -2421,6 +2421,27 @@
             const progressPercent = document.getElementById('podcast-progress-percent');
             const progressStatus = document.getElementById('podcast-progress-status');
 
+            // Simulated progress: estimate ~10s per segment
+            const totalSteps = segments.length;
+            const estimatedMsPerSegment = 10000;
+            const totalEstimatedMs = totalSteps * estimatedMsPerSegment + 5000; // +5s for encoding
+            let progressStartTime = Date.now();
+            let progressDone = false;
+
+            function updateSimulatedProgress() {
+                if (progressDone) return;
+                const elapsed = Date.now() - progressStartTime;
+                // Ease-out curve that approaches 90% but never reaches it
+                const raw = elapsed / totalEstimatedMs;
+                const pct = Math.min(90, Math.floor(raw * 100 * (1 - raw * 0.3)));
+                const segEstimate = Math.min(totalSteps, Math.floor(elapsed / estimatedMsPerSegment) + 1);
+                progressBar.style.width = pct + '%';
+                progressPercent.textContent = pct + '%';
+                progressStatus.textContent = `Rendering segment ${segEstimate}/${totalSteps}...`;
+                requestAnimationFrame(updateSimulatedProgress);
+            }
+            requestAnimationFrame(updateSimulatedProgress);
+
             try {
                 const isStudio = podcastMode === 'studio' && musicTracks.length > 0;
                 const endpoint = isStudio ? '/api/podcast/render/v3' : '/api/podcast/render';
@@ -2445,7 +2466,7 @@
                         volume: s.volume,
                         emotion: s.emotion
                     })),
-                    output_format: 'wav',
+                    output_format: 'mp3',
                     target_sample_rate: 44100,
                     deterministic: deterministic
                 };
@@ -2497,6 +2518,12 @@
                     totalDurationMs = parseInt(totalDurationHeader);
                 }
 
+                // Stop simulated progress and jump to 100%
+                progressDone = true;
+                progressBar.style.width = '100%';
+                progressPercent.textContent = '100%';
+                progressStatus.textContent = 'Encoding MP3...';
+
                 const blob = await response.blob();
                 const audioUrl = URL.createObjectURL(blob);
                 
@@ -2511,6 +2538,7 @@
                 }
 
             } catch (error) {
+                progressDone = true;
                 progressContainer.style.display = 'none';
                 showResult('podcast-result', '', `Error: ${error.message}`, true);
             }
