@@ -1,59 +1,72 @@
-# Local TTS Studio v2
+<div align="center">
 
-**Open-source, local-first speech studio.**
+# 🎙️ Local TTS Studio
 
-Generate production-ready speech and multi-speaker podcasts — entirely offline on your own GPU.
+**Open-source, GPU-accelerated speech studio for single-voice generation and multi-speaker podcast production — 100% offline.**
 
-Think: a local, open-source alternative to ElevenLabs that you fully control.
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Qwen3-TTS](https://img.shields.io/badge/Qwen3--TTS-1.7B-purple?logo=huggingface)](https://huggingface.co/collections/Qwen/qwen3-tts)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Built to eliminate per-minute API costs and give you full control over your voice stack.
+*Think: a local, self-hosted ElevenLabs alternative you fully control.*
 
-No APIs. No per-minute costs. No cloud lock-in.
+[Getting Started](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [Configuration](#%EF%B8%8F-configuration) · [API Reference](#-api-reference) · [Contributing](#-contributing)
 
-⚡ 8–12s generation  
-🎙️ Multi-speaker podcast compiler  
-🔒 100% local & private  
-💰 $0 marginal cost per minute
-
-Powered by [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS) 1.7B
+</div>
 
 ---
 
-## 🎙️ Podcast Mode (flagship)
+## Why Local TTS Studio?
 
-**Script-to-audio compiler for deterministic multi-speaker production.**
+| Cloud TTS services | Local TTS Studio |
+|---|---|
+| Per-minute billing that scales with usage | **$0 marginal cost** — run unlimited generations |
+| Audio leaves your network | **100% local & private** — nothing leaves your GPU |
+| Rate limits and vendor lock-in | **No API keys required** for core TTS |
+| Limited voice customization | **Design, clone, or pick** from 9 preset voices |
 
-Turn scripts into ready-to-publish audio in one click.
-
-- Up to 10 speakers
-- Mix preset, designed, and cloned voices
-- Per-line timing & volume control
-- Deterministic output (same script → identical audio)
-- ~15–20s render for a 30s conversation on RTX 3060
-
-**Perfect for:**  
-Podcasts • Audiobooks • E-learning • Marketing videos
-
-### Screenshots
-<table> <tr> <td align="center" width="25%"><b>🎭 Custom Voice</b><br/> <img src="https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118" width="100%"/></td> <td align="center" width="25%"><b>🎨 Voice Design</b><br/> <img src="https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc" width="100%"/></td> <td align="center" width="25%"><b>🔊 Voice Clone</b><br/> <img src="https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4" width="100%"/></td> <td align="center" width="25%"><b>🎙️ Podcast Mode</b><br/> <img src="https://github.com/user-attachments/assets/750b17f8-023d-45a1-b9f0-79561dadcad5" width="100%"/></td> </tr> </table>
-
-🎙️ Podcast Mode - Script → Final Audio
-
-<table> <tr> <td width="50%" align="center"> <b>Script Editor</b><br/> <img src="https://github.com/user-attachments/assets/5e2d4f72-c51f-428e-ba79-153ccdee8057" height="260"/> </td> <td width="50%" align="center"> <b>Rendered Output</b><br/> <img src="https://github.com/user-attachments/assets/f3864540-9df2-4add-89a8-2d432194cb41" height="260"/> </td> </tr> </table>
+**Performance**: ~8–12s per generation on RTX 3060 · bfloat16 inference · 24 kHz output
 
 ---
 
-## Single Voice Generation
+## ✨ Features
 
-- 9 multilingual preset voices
-- Voice design from text descriptions
-- Voice cloning from short audio samples
+### Single Voice Generation
+- **Custom Voice** — 9 multilingual presets (English, Chinese, Japanese, Korean, + 7 more)
+- **Voice Design** — describe a voice in natural language and generate it
+- **Voice Clone** — clone any voice from a short audio sample (ICL or x-vector modes)
+
+### Podcast Mode — Script-to-Audio Compiler
+- Up to **10 speakers** per production with mixed voice types
+- Per-segment **timing, volume, and emotion** control
+- **Deterministic rendering** — same script produces identical audio
+- **Fault-tolerant pipeline** — failed segments get silence placeholders instead of crashing the entire render
+
+### v3: Timeline Studio *(New)*
+- **Multi-track timeline editor** with speech + music lanes
+- **Music Library** — search royalty-free tracks from Jamendo, Freesound, and Openverse
+- **Audio ducking** — music auto-lowers under speech segments
+- **Loop, trim, fade** — per-track audio manipulation
+- **Live timeline preview** — estimated duration updates as you edit
 
 ---
 
-## Quick Start
+## Screenshots
 
-**Requirements**: NVIDIA GPU (6GB+ VRAM), Python 3.10+, 15GB disk space
+| Custom Voice | Voice Design |
+|:---:|:---:|
+| ![Custom Voice](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118) | ![Voice Design](https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc) |
+
+| Voice Clone | Podcast Mode |
+|:---:|:---:|
+| ![Voice Clone](https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4) | ![Podcast Mode](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118) |
+
+---
+
+## 🚀 Quick Start
+
+**Requirements**: NVIDIA GPU (6 GB+ VRAM) · Python 3.10+ · ~15 GB disk space
 
 ```bash
 git clone https://github.com/sammy995/Local-TTS-Studio.git
@@ -63,120 +76,213 @@ conda install -c conda-forge ffmpeg -y
 python run_local.py
 ```
 
-Open: [http://localhost:8000](http://localhost:8000)
+Open **http://localhost:8000** — that's it.
 
-That's it.
-
-_First run loads the model (~30s). After that, each generation takes ~8–12s._
+> First run downloads models automatically (~10 GB). Subsequent starts take ~30 s for model loading.
 
 <details>
-<summary><b>📋 Full Installation Guide</b></summary>
+<summary><strong>📋 Detailed Installation</strong></summary>
 
-### Hardware Requirements
+### Hardware
 
-**Minimum**: GTX 1660 (6GB VRAM), 16GB RAM  
-**Recommended**: RTX 3060 (8GB+ VRAM), 32GB RAM
+| | Minimum | Recommended |
+|---|---|---|
+| **GPU** | GTX 1660 (6 GB VRAM) | RTX 3060+ (8 GB+ VRAM) |
+| **RAM** | 16 GB | 32 GB |
+| **Disk** | 15 GB | 20 GB |
 
 ### Step-by-Step
 
-**1. Clone repository**
 ```bash
+# 1. Clone
 git clone https://github.com/sammy995/Local-TTS-Studio.git
 cd Local-TTS-Studio
-```
 
-**2. Create Python environment**
-```bash
-conda create -n qwen3-tts python=3.12 -y
-conda activate qwen3-tts
+# 2. Create environment
+conda create -n local-tts python=3.12 -y
+conda activate local-tts
 pip install -r requirements.txt
-```
 
-**3. Install ffmpeg** (for M4A/MP3 support)
-```bash
+# 3. Install ffmpeg (required for MP3/M4A export)
 conda install -c conda-forge ffmpeg -y
-# Or: winget install Gyan.FFmpeg (Windows)
-```
+# Alternative (Windows): winget install Gyan.FFmpeg
 
-**4. Run**
-```bash
+# 4. Launch
 python run_local.py
 ```
 
-Models download automatically on first use (~10GB, 5-10 minutes).
+### Optional: Pre-download Models
 
-**Optional - Pre-download models:**
+Skip the first-run download by pulling models ahead of time:
+
 ```bash
 pip install -U "huggingface_hub[cli]"
-huggingface-cli download Qwen/Qwen3-TTS-Tokenizer-12Hz --local-dir models/Qwen3-TTS-Tokenizer-12Hz
+huggingface-cli download Qwen/Qwen3-TTS-Tokenizer-12Hz       --local-dir models/Qwen3-TTS-Tokenizer-12Hz
 huggingface-cli download Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --local-dir models/Qwen3-TTS-12Hz-1.7B-CustomVoice
 huggingface-cli download Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign --local-dir models/Qwen3-TTS-12Hz-1.7B-VoiceDesign
-huggingface-cli download Qwen/Qwen3-TTS-12Hz-1.7B-Base --local-dir models/Qwen3-TTS-12Hz-1.7B-Base
+huggingface-cli download Qwen/Qwen3-TTS-12Hz-1.7B-Base        --local-dir models/Qwen3-TTS-12Hz-1.7B-Base
 ```
 
 </details>
 
 ---
 
-## Usage
+## 🏗️ Architecture
 
-### Podcast Mode
+Hexagonal (ports & adapters) layout — core logic has zero framework dependencies:
 
-1. Add speakers
-2. Write script
-3. Click render
+```
+Local-TTS-Studio/
+├── core/                   # Pure domain logic (no I/O)
+│   ├── tts_engine.py       #   TTS generation interface
+│   ├── model_manager.py    #   Model loading & lifecycle
+│   └── audio_pipeline.py   #   Mix, duck, loop, trim, fade, resample
+├── services/               # Stateless orchestration
+│   ├── tts_service.py      #   Single-voice generation
+│   ├── podcast_service.py  #   Multi-speaker render pipeline
+│   ├── podcast_models.py   #   Pydantic models for podcast scripts
+│   └── music_service.py    #   Jamendo / Freesound / Openverse client
+├── infra/                  # Side-effect adapters
+│   └── storage.py          #   File I/O & output management
+├── runtimes/               # Delivery mechanism
+│   ├── local_api.py        #   FastAPI server & endpoints
+│   └── config_loader.py    #   YAML config reader
+├── simple-ui.html          # Single-file frontend (~3 400 lines)
+├── config.yaml             # All tunables in one place
+├── requirements.txt
+└── run_local.py            # Entry point
+```
 
-### Single Voice
+### Key Design Decisions
 
-1. Pick voice
-2. Enter text
-3. Generate
+| Decision | Rationale |
+|---|---|
+| Single-file HTML frontend | Zero build step — open and go |
+| Hexagonal backend | Core logic is testable without FastAPI |
+| Speaker-stable deterministic seeds | Same speaker always gets the same voice timbre |
+| Per-segment fault tolerance | One failed TTS segment can't crash the whole podcast |
+| Music ducking in `audio_pipeline` | Keeps mixing logic out of the render loop |
 
-**Tips:**
-- 500–1000ms pauses sound natural
-- Adjust volume per line (0.8x–1.2x)
-- Deterministic mode guarantees identical output
+---
 
-## Configuration
+## ⚙️ Configuration
 
-**Out of memory?** Edit `config.yaml`:
+All settings live in [`config.yaml`](config.yaml):
 
 ```yaml
+# Model size — switch to 0.6B if running low on VRAM
 models:
-  default_size: "0.6B"  # Change from 1.7B → 0.6B
+  default_size: "1.7B"    # or "0.6B"
+
+# Music library API keys (optional — for Timeline Studio)
+music_apis:
+  jamendo:
+    client_id: ""          # Free → https://devportal.jamendo.com
+  freesound:
+    token: ""              # Free → https://freesound.org/apiv2/apply
+  openverse:
+    token: ""              # Optional (anonymous access works)
 ```
+
+> **Tip**: Copy `.env.example` → `.env` for secret management. The app reads both files.
 
 ---
 
-## Troubleshooting
+## 📡 API Reference
 
-**CUDA out of memory**: Edit `config.yaml` → `default_size: "0.6B"` or close GPU programs  
-**M4A/MP3 files fail**: Install ffmpeg: `conda install -c conda-forge ffmpeg -y`  
-**First generation slow**: Model loading (30s first time, 8–12s after)  
-**Flash Attention warning**: Ignore it (optional optimization)
+All endpoints are served at `http://localhost:8000`.
+
+### Core TTS
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/tts/generate` | Single-voice generation (custom, design, or clone) |
+| `GET`  | `/api/v1/voices` | List available preset voices |
+| `GET`  | `/api/v1/models/status` | Model load state & GPU memory |
+
+### Podcast — v2 (Script Mode)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v2/podcast/render` | Render a multi-speaker script to audio |
+
+### Podcast — v3 (Timeline Studio)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v3/podcast/render` | Render a timeline (speech + music tracks) |
+
+### Music Library
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET`  | `/api/v1/music/search` | Search royalty-free music (Jamendo, Freesound, Openverse) |
+| `POST` | `/api/v1/music/download` | Download & cache a track locally |
+| `GET`  | `/api/v1/music/assets` | List cached music assets |
+
+<details>
+<summary><strong>Example: Generate speech</strong></summary>
+
+```bash
+curl -X POST http://localhost:8000/api/v1/tts/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello world, this is Local TTS Studio.",
+    "mode": "custom_voice",
+    "speaker": "Serena",
+    "language": "English"
+  }'
+```
+
+</details>
 
 ---
 
-## Architecture
+## 🔧 Troubleshooting
 
-Simple layered architecture:
-
-```
-core/           # Generation logic only
-services/       # Podcast compiler
-infra/          # Storage + models
-runtimes/       # FastAPI app
-```
-
-Models: Qwen3-TTS 1.7B (CustomVoice, VoiceDesign, Base)  
-Inference: PyTorch + bfloat16 + CUDA
+| Problem | Fix |
+|---|---|
+| **CUDA out of memory** | Set `default_size: "0.6B"` in `config.yaml`, or close other GPU programs |
+| **MP3 / M4A export fails** | Install ffmpeg: `conda install -c conda-forge ffmpeg -y` |
+| **First generation slow (~30 s)** | Normal — model loading. Subsequent runs: 8–12 s |
+| **Flash Attention warning** | Safe to ignore (optional optimization) |
+| **Music search returns no results** | Add API keys to `config.yaml` → `music_apis` section |
+| **Voice clone sounds different each time** | Provide `ref_text` alongside `ref_audio` for ICL mode (more stable than x-vector) |
 
 ---
 
-## Credits
+## 🤝 Contributing
 
-Powered by [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS) models from the Qwen Team.
+Contributions are welcome! Here's how to get started:
 
-**License**: Qwen3-TTS models are subject to their [original license terms](https://github.com/QwenLM/Qwen3-TTS/blob/main/LICENSE). This application is a UI wrapper and does not claim ownership of underlying models.
+1. **Fork** the repository
+2. **Create a branch** — `git checkout -b feature/your-feature`
+3. **Make changes** — follow the existing hexagonal structure
+4. **Test** — make sure `python -c "import py_compile; py_compile.compile('runtimes/local_api.py')"` passes
+5. **Submit a PR** with a clear description
 
-**Resources**: [Paper (arXiv)](https://arxiv.org/abs/2601.15621) • [Models (HuggingFace)](https://huggingface.co/collections/Qwen/qwen3-tts) • [Official Repo](https://github.com/QwenLM/Qwen3-TTS)
+### Areas We'd Love Help With
+
+- [ ] Streaming audio output (chunked WAV)
+- [ ] WebSocket progress events during render
+- [ ] Additional TTS model backends (Bark, XTTS-v2)
+- [ ] Docker image for one-command deployment
+- [ ] Test suite (pytest) for core/ and services/
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+**Model License**: Qwen3-TTS models are subject to their [original license terms](https://github.com/QwenLM/Qwen3-TTS/blob/main/LICENSE). This application is a UI wrapper and does not claim ownership of underlying models.
+
+---
+
+## 🙏 Acknowledgements
+
+- **[Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS)** — the 1.7B parameter TTS model that powers all generation
+- **[Jamendo](https://www.jamendo.com)**, **[Freesound](https://freesound.org)**, **[Openverse](https://openverse.org)** — royalty-free music APIs
+- **[FastAPI](https://fastapi.tiangolo.com)** — the async Python web framework
+
+**Resources**: [Qwen3-TTS Paper](https://arxiv.org/abs/2601.15621) · [Models on HuggingFace](https://huggingface.co/collections/Qwen/qwen3-tts) · [Official Repo](https://github.com/QwenLM/Qwen3-TTS)

@@ -1051,6 +1051,419 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
+        /* ===== v3 TIMELINE STUDIO STYLES ===== */
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .mode-toggle-btn {
+            flex: 1;
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .mode-toggle-btn.active {
+            background: var(--accent);
+            color: var(--text-on-accent);
+            font-weight: 700;
+        }
+        .mode-toggle-btn:hover:not(.active) {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        /* Section Panel */
+        .v3-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .v3-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border);
+        }
+        .v3-panel-title {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .v3-panel-body {
+            padding: 1.25rem;
+        }
+
+        /* Music Library Tabs */
+        .music-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            padding: 3px;
+            margin-bottom: 1rem;
+        }
+        .music-tab {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-tertiary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .music-tab.active {
+            background: var(--accent-purple);
+            color: var(--primary);
+        }
+
+        /* Search Bar */
+        .music-search-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .music-search-row input {
+            flex: 1;
+            padding: 0.625rem 0.875rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+        .music-search-row input:focus {
+            border-color: var(--accent-purple);
+            outline: none;
+        }
+        .music-search-row select {
+            padding: 0.625rem 0.75rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            font-family: inherit;
+        }
+
+        /* Music Results Grid */
+        .music-results {
+            max-height: 320px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .music-result-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            transition: border-color 0.15s;
+        }
+        .music-result-card:hover {
+            border-color: var(--accent-purple);
+        }
+        .music-result-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .music-result-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-result-meta {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+        .music-result-actions {
+            display: flex;
+            gap: 0.375rem;
+            flex-shrink: 0;
+        }
+        .music-btn-sm {
+            padding: 0.375rem 0.625rem;
+            background: transparent;
+            border: 1.5px solid var(--accent-purple);
+            color: var(--accent-purple);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .music-btn-sm:hover {
+            background: var(--accent-purple);
+            color: var(--primary);
+        }
+        .music-btn-sm.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .music-btn-sm.accent:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        /* Asset Library List */
+        .asset-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .asset-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.375rem;
+        }
+        .asset-card .asset-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-purple);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        .asset-card .asset-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .asset-card .asset-name {
+            font-weight: 600;
+            font-size: 0.8125rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .asset-card .asset-meta {
+            font-size: 0.6875rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Timeline Container */
+        .timeline-container {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        .timeline-ruler {
+            display: flex;
+            align-items: flex-end;
+            height: 28px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 0.5rem;
+            position: relative;
+            user-select: none;
+        }
+        .timeline-ruler-tick {
+            position: absolute;
+            bottom: 0;
+            font-size: 0.625rem;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            transform: translateX(-50%);
+        }
+        .timeline-ruler-tick::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 1px;
+            height: 8px;
+            background: var(--border);
+        }
+
+        /* Timeline Rows */
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.375rem;
+            min-height: 44px;
+        }
+        .timeline-row-label {
+            width: 80px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            padding-right: 0.5rem;
+        }
+        .timeline-row-track {
+            flex: 1;
+            height: 40px;
+            background: var(--bg-subtle);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Speech Blocks on Timeline */
+        .tl-block {
+            position: absolute;
+            top: 4px;
+            height: 32px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: default;
+            transition: opacity 0.15s;
+        }
+        .tl-block.speech {
+            background: var(--accent);
+            color: var(--text-on-accent);
+            border: 1px solid var(--accent-hover);
+        }
+        .tl-block.music {
+            background: var(--accent-purple);
+            color: var(--primary);
+            border: 1px solid var(--accent-purple-dark);
+            opacity: 0.85;
+        }
+        .tl-block.estimated {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        /* Music Track Cards */
+        .music-track-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--accent-purple);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .music-track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .music-track-name {
+            font-weight: 700;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+        }
+        .music-track-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+        .music-track-control label {
+            display: block;
+            font-size: 0.6875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .music-track-control input,
+        .music-track-control select {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.8125rem;
+            font-family: inherit;
+        }
+
+        /* Upload drop zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+        .upload-zone:hover {
+            border-color: var(--accent-purple);
+            background: rgba(214, 163, 251, 0.05);
+        }
+        .upload-zone.dragging {
+            border-color: var(--accent);
+            background: rgba(171, 246, 45, 0.05);
+        }
+        .upload-zone-text {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .upload-zone-text strong {
+            color: var(--accent-purple);
+        }
+
+        /* v3 hidden toggle */
+        .v3-section { display: none; }
+        .v3-section.active { display: block; }
+        .v2-section { display: block; }
+        .v2-section.hidden { display: none; }
+
+        /* Loading spinner small */
+        .spinner-sm {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -1146,12 +1559,12 @@
                     </div>
             
                     <div class="form-group">
-                        <label for="cv-text">Text to Synthesize *</label>
+                        <label for="cv-text" title="The text that will be converted to speech audio">Text to Synthesize *</label>
                         <textarea id="cv-text" placeholder="Enter the text you want to convert to speech...">Hello! This is a test of the custom voice generation system.</textarea>
                     </div>
 
             <div class="form-group">
-                <label for="cv-speaker">Speaker *</label>
+                <label for="cv-speaker" title="Choose a pre-trained voice profile with distinct characteristics">Speaker *</label>
                 <select id="cv-speaker">
                     <option value="Vivian">Vivian - Bright young female (Chinese)</option>
                     <option value="Serena">Serena - Warm gentle female (Chinese)</option>
@@ -1166,7 +1579,7 @@
             </div>
 
             <div class="form-group">
-                <label for="cv-language">Language</label>
+                <label for="cv-language" title="Language of the text. Auto Detect works for most cases">Language</label>
                 <select id="cv-language">
                     <option value="Auto">Auto Detect</option>
                     <option value="Chinese">Chinese</option>
@@ -1177,7 +1590,7 @@
             </div>
 
             <div class="form-group">
-                <label for="cv-instruct">Style Instruction (Optional)</label>
+                <label for="cv-instruct" title="Natural language instruction to control tone and emotion (e.g., 'Say it cheerfully', 'Speak in a whisper')">Style Instruction (Optional)</label>
                 <input type="text" id="cv-instruct" placeholder="e.g., Say it in a very happy tone">
             </div>
 
@@ -1255,12 +1668,12 @@
                     </div>
             
                     <div class="form-group">
-                        <label for="vd-text">Text to Synthesize *</label>
+                        <label for="vd-text" title="The text that will be spoken in the designed voice">Text to Synthesize *</label>
                         <textarea id="vd-text" placeholder="Enter the text...">Hello! I'm testing the voice design feature.</textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="vd-language">Language</label>
+                        <label for="vd-language" title="Language of the text. Auto Detect works for most cases">Language</label>
                         <select id="vd-language">
                             <option value="Auto">Auto Detect</option>
                             <option value="Chinese">Chinese</option>
@@ -1271,7 +1684,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="vd-instruct">Voice Description *</label>
+                        <label for="vd-instruct" title="Describe the voice you want to create using natural language (age, gender, pitch, energy, accent, etc.)">Voice Description *</label>
                         <textarea id="vd-instruct" placeholder="Describe the voice characteristics...">A cheerful young female voice, bright and energetic with a friendly tone.</textarea>
                     </div>
 
@@ -1349,7 +1762,7 @@
                     </div>
             
                     <div class="form-group">
-                        <label>Reference Audio *</label>
+                        <label title="Upload a short audio clip (3-10 seconds) of the voice you want to clone">Reference Audio *</label>
                         <div class="file-input-wrapper">
                             <input type="file" id="vc-audio" accept="audio/*" onchange="updateFileName(this, 'vc-filename')">
                             <label for="vc-audio" class="file-input-label">
@@ -1366,24 +1779,24 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="vc-ref-text">Reference Text (Transcript)</label>
+                        <label for="vc-ref-text" title="Exact transcript of what is being said in the reference audio. Improves clone quality but is optional.">Reference Text (Transcript)</label>
                         <textarea id="vc-ref-text" placeholder="Enter the transcript of the reference audio (optional if using X-Vector only mode)"></textarea>
                     </div>
 
                     <div class="form-group">
                         <div class="checkbox-wrapper">
                             <input type="checkbox" id="vc-xvector">
-                            <label for="vc-xvector">X-Vector Only Mode (Use speaker embedding only, no need for transcript)</label>
+                            <label for="vc-xvector" title="When enabled, only the speaker's voice fingerprint is used (no transcript needed). Faster but slightly lower fidelity.">X-Vector Only Mode (Use speaker embedding only, no need for transcript)</label>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="vc-text">Text to Synthesize *</label>
+                        <label for="vc-text" title="The new text that will be spoken in the cloned voice">Text to Synthesize *</label>
                         <textarea id="vc-text" placeholder="Enter the text you want in the cloned voice...">This is a test of the voice cloning system.</textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="vc-language">Language</label>
+                        <label for="vc-language" title="Language of the text to synthesize. Auto Detect works for most cases">Language</label>
                         <select id="vc-language">
                             <option value="Auto">Auto Detect</option>
                             <option value="Chinese">Chinese</option>
@@ -1477,7 +1890,7 @@
                     <!-- Speakers Section -->
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <label style="margin: 0;">👥 Speakers <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Max 10)</span></label>
+                            <label style="margin: 0;" title="Define the voices that will speak in your podcast">👥 Speakers <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Max 10)</span></label>
                             <button type="button" class="btn-secondary" onclick="addSpeaker()" title="Add a new voice actor to your podcast">
                                 + Add Speaker
                             </button>
@@ -1485,15 +1898,126 @@
                         <div id="speakers-list"></div>
                     </div>
 
+                    <!-- v3: Mode Toggle -->
+                    <div class="mode-toggle" id="podcast-mode-toggle">
+                        <button class="mode-toggle-btn active" onclick="setPodcastMode('simple')" id="mode-btn-simple">📝 Script Mode</button>
+                        <button class="mode-toggle-btn" onclick="setPodcastMode('studio')" id="mode-btn-studio">🎛️ Timeline Studio</button>
+                    </div>
+
                     <!-- Script Section -->
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <label style="margin: 0;">📝 Script <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Conversation flow)</span></label>
+                            <label style="margin: 0;" title="Build your podcast script line by line — each line is spoken by a chosen speaker">📝 Script <span style="color: var(--text-tertiary); font-size: 0.875rem; font-weight: 500;">(Conversation flow)</span></label>
                             <button type="button" class="btn-secondary" onclick="addSegment()" title="Add a new line of dialogue">
                                 + Add Line
                             </button>
                         </div>
                         <div id="segments-list"></div>
+                    </div>
+
+                    <!-- ===== v3: MUSIC LIBRARY PANEL (studio mode only) ===== -->
+                    <div class="v3-section" id="v3-music-library">
+                        <div class="v3-panel">
+                            <div class="v3-panel-header">
+                                <span class="v3-panel-title">🎵 Music Library</span>
+                                <span style="font-size: 0.75rem; color: var(--text-tertiary);" id="asset-count-badge">0 assets</span>
+                            </div>
+                            <div class="v3-panel-body">
+
+                                <!-- Music sub-tabs -->
+                                <div class="music-tabs">
+                                    <button class="music-tab active" onclick="switchMusicTab('library')" id="mtab-library">My Library</button>
+                                    <button class="music-tab" onclick="switchMusicTab('search')" id="mtab-search">Search Online</button>
+                                    <button class="music-tab" onclick="switchMusicTab('upload')" id="mtab-upload">Upload</button>
+                                </div>
+
+                                <!-- My Library sub-tab -->
+                                <div id="music-panel-library">
+                                    <div class="asset-list" id="asset-list">
+                                        <p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 2rem 0;">No assets yet. Upload or import music to get started.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Search Online sub-tab -->
+                                <div id="music-panel-search" style="display: none;">
+                                    <div class="music-search-row">
+                                        <input type="text" id="music-search-query" placeholder="Search for music (e.g., ambient, upbeat, lo-fi)..." 
+                                               onkeydown="if(event.key==='Enter') searchMusic()"
+                                               title="Enter keywords to search for royalty-free music across online libraries">
+                                        <select id="music-search-source">
+                                            <option value="jamendo">Jamendo</option>
+                                            <option value="freesound">Freesound</option>
+                                            <option value="openverse">Openverse</option>
+                                        </select>
+                                        <button class="music-btn-sm accent" onclick="searchMusic()" style="padding: 0.625rem 1rem;">🔍</button>
+                                    </div>
+                                    <div class="music-results" id="music-search-results">
+                                        <p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 1.5rem 0; font-size: 0.875rem;">Search Jamendo, Freesound, or Openverse for royalty-free music</p>
+                                    </div>
+                                </div>
+
+                                <!-- Upload sub-tab -->
+                                <div id="music-panel-upload" style="display: none;">
+                                    <div class="upload-zone" id="upload-zone"
+                                         onclick="document.getElementById('music-file-input').click()"
+                                         ondragover="event.preventDefault(); this.classList.add('dragging')"
+                                         ondragleave="this.classList.remove('dragging')"
+                                         ondrop="event.preventDefault(); this.classList.remove('dragging'); handleMusicFileDrop(event)">
+                                        <p class="upload-zone-text">
+                                            🎵 Drop audio file here or <strong>click to browse</strong>
+                                        </p>
+                                        <p style="color: var(--text-tertiary); font-size: 0.75rem; margin-top: 0.5rem;">MP3, WAV, OGG, FLAC supported</p>
+                                    </div>
+                                    <input type="file" id="music-file-input" accept="audio/*" style="display: none;" onchange="handleMusicFileSelect(this)">
+                                    <div id="upload-form-fields" style="display: none;">
+                                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                            <div>
+                                                <label style="display: block; font-size: 0.6875rem; color: var(--text-secondary); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;" title="A name for this music file in your library">Title</label>
+                                                <input type="text" id="upload-title" placeholder="Track title" style="width:100%; padding:0.5rem; background:var(--bg-dark); border:2px solid var(--border); border-radius:4px; color:var(--text-primary); font-size:0.8125rem;">
+                                            </div>
+                                            <div>
+                                                <label style="display: block; font-size: 0.6875rem; color: var(--text-secondary); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;" title="The artist or creator of this music track">Artist</label>
+                                                <input type="text" id="upload-artist" placeholder="Artist name" style="width:100%; padding:0.5rem; background:var(--bg-dark); border:2px solid var(--border); border-radius:4px; color:var(--text-primary); font-size:0.8125rem;">
+                                            </div>
+                                        </div>
+                                        <button class="music-btn-sm accent" onclick="uploadMusicFile()" style="width: 100%; padding: 0.625rem;">
+                                            ⬆️ Upload to Library
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== v3: MUSIC TRACKS ON TIMELINE ===== -->
+                    <div class="v3-section" id="v3-music-tracks">
+                        <div class="v3-panel">
+                            <div class="v3-panel-header">
+                                <span class="v3-panel-title">🎚️ Music Tracks</span>
+                                <button class="music-btn-sm accent" onclick="addMusicTrack()">+ Add Track</button>
+                            </div>
+                            <div class="v3-panel-body" id="music-tracks-list">
+                                <p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 1rem 0;">No music tracks. Add one to layer background music under your speech.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== v3: VISUAL TIMELINE ===== -->
+                    <div class="v3-section" id="v3-timeline">
+                        <div class="v3-panel">
+                            <div class="v3-panel-header">
+                                <span class="v3-panel-title">📐 Timeline Preview</span>
+                                <span style="font-size: 0.75rem; color: var(--text-tertiary);" id="timeline-duration-badge">0:00</span>
+                            </div>
+                            <div class="v3-panel-body" style="padding: 0.75rem;">
+                                <div class="timeline-container" id="timeline-canvas">
+                                    <div class="timeline-ruler" id="timeline-ruler"></div>
+                                    <div id="timeline-rows">
+                                        <p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 1rem 0; font-size: 0.8125rem;">Add segments or music tracks to see a live preview</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Settings -->
@@ -1614,7 +2138,7 @@
                     </div>
                     <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 1rem; margin-bottom: 1rem;">
                         <div>
-                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Voice Type</label>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;" title="Choose how this speaker's voice is generated: Preset, AI-designed, or cloned from audio">Voice Type</label>
                             <select onchange="updateSpeakerMode('${speaker.id}', this.value)" 
                                     style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-weight: 600;"
                                     title="Choose how to generate this speaker's voice">
@@ -1624,8 +2148,9 @@
                             </select>
                         </div>
                         <div>
-                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-                                ${speaker.mode === 'custom' ? 'Voice Selection' : speaker.mode === 'design' ? 'Voice Description' : 'Cloned Voice ID'}
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;"
+                                   title="${speaker.mode === 'custom' ? 'Pick one of the built-in voice profiles' : speaker.mode === 'design' ? 'Describe the voice you want the AI to create' : 'Upload a short audio clip of the voice to clone'}">
+                                ${speaker.mode === 'custom' ? 'Voice Selection' : speaker.mode === 'design' ? 'Voice Description' : 'Reference Audio'}
                             </label>
                             ${speaker.mode === 'custom' ? `
                                 <select onchange="updateSpeakerConfig('${speaker.id}', '${speaker.mode}', this.value)"
@@ -1641,20 +2166,39 @@
                                     <option value="Ono_Anna" ${(speaker.config.voice_id || '').toLowerCase() === 'ono_anna' ? 'selected' : ''}>Ono Anna - Playful female (Japanese)</option>
                                     <option value="Sohee" ${(speaker.config.voice_id || '').toLowerCase() === 'sohee' ? 'selected' : ''}>Sohee - Warm female (Korean)</option>
                                 </select>
-                            ` : `
+                            ` : speaker.mode === 'design' ? `
                                 <input type="text" 
-                                       value="${speaker.mode === 'design' ? speaker.config.description || '' : speaker.config.prompt_id || ''}"
-                                       onchange="updateSpeakerConfig('${speaker.id}', '${speaker.mode}', this.value)"
+                                       value="${speaker.config.description || ''}"
+                                       onchange="updateSpeakerConfig('${speaker.id}', 'design', this.value)"
                                        style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
-                                       placeholder="${speaker.mode === 'design' ? 'young energetic female voice' : 'your_saved_voice_id'}"
-                                       title="${speaker.mode === 'design' ? 'Describe the voice characteristics you want' : 'Use a previously cloned voice ID'}">
+                                       placeholder="young energetic female voice"
+                                       title="Describe the voice characteristics you want">
+                            ` : `
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label style="flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg-dark); border: 2px solid ${speaker.config.ref_audio_base64 ? 'var(--accent)' : 'var(--border)'}; border-radius: 4px; cursor: pointer; transition: border-color 0.2s;"
+                                               title="Upload a short audio clip of the voice you want to clone">
+                                            <span style="font-size: 0.8125rem; color: ${speaker.config.ref_audio_base64 ? 'var(--accent)' : 'var(--text-secondary)'}; font-weight: 600;">
+                                                ${speaker.config.ref_audio_base64 ? '✓ ' + (speaker.config.ref_audio_name || 'Audio loaded') : '🎙️ Upload reference audio'}
+                                            </span>
+                                            <input type="file" accept="audio/*" style="display: none;"
+                                                   onchange="handleCloneAudioUpload('${speaker.id}', this)">
+                                        </label>
+                                    </div>
+                                    <input type="text" 
+                                           value="${speaker.config.ref_text || ''}"
+                                           onchange="updateSpeakerConfig('${speaker.id}', 'clone', this.value)"
+                                           style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: 0.8125rem;"
+                                           placeholder="Transcript of reference audio (optional, improves quality)"
+                                           title="What is being said in the reference audio clip">
+                                </div>
                             `}
                         </div>
                     </div>
                     <details style="margin-top: 0.75rem;">
                         <summary style="cursor: pointer; font-size: 0.8125rem; color: var(--accent); font-weight: 600; user-select: none;">⚙️ Advanced Settings (Optional)</summary>
                         <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Emotional Style</label>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;" title="Add emotional style instructions (e.g., cheerful and engaging, serious and professional)">Emotional Style</label>
                             <input type="text" value="${speaker.style_instruction || ''}"
                                    onchange="updateSpeakerStyle('${speaker.id}', this.value)"
                                    style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
@@ -1684,12 +2228,14 @@
             segments.push(segment);
             segments.sort((a, b) => a.order - b.order);
             renderSegments();
+            updateTimelinePreview();
             return segment;
         }
 
         function removeSegment(id) {
             segments = segments.filter(s => s.id !== id);
             renderSegments();
+            updateTimelinePreview();
         }
 
         function renderSegments() {
@@ -1729,7 +2275,7 @@
                         <summary style="cursor: pointer; font-size: 0.8125rem; color: var(--accent); font-weight: 600; user-select: none;">⚙️ Timing & Volume</summary>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Pause After</label>
+                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;" title="Silence gap after this line before the next speaker (in milliseconds)">Pause After</label>
                                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                                     <input type="number" value="${segment.pause_after_ms}"
                                            onchange="updateSegmentPause('${segment.id}', parseInt(this.value))"
@@ -1739,7 +2285,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Volume</label>
+                                <label style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;" title="Volume multiplier for this line (1.0 = normal, 0.5 = half, 2.0 = double)">Volume</label>
                                 <input type="number" step="0.1" min="0" max="2" value="${segment.volume}"
                                        onchange="updateSegmentVolume('${segment.id}', parseFloat(this.value))"
                                        style="width: 100%; padding: 0.625rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 4px; color: var(--text-primary);"
@@ -1765,7 +2311,7 @@
                 // Reset config based on mode
                 if (mode === 'custom') speaker.config = {voice_id: 'Female-1'};
                 else if (mode === 'design') speaker.config = {description: ''};
-                else if (mode === 'clone') speaker.config = {prompt_id: ''};
+                else if (mode === 'clone') speaker.config = {ref_audio_base64: null, ref_audio_name: '', ref_text: ''};
                 renderSpeakers();
             }
         }
@@ -1775,8 +2321,23 @@
             if (speaker) {
                 if (mode === 'custom') speaker.config.voice_id = value;
                 else if (mode === 'design') speaker.config.description = value;
-                else if (mode === 'clone') speaker.config.prompt_id = value;
+                else if (mode === 'clone') speaker.config.ref_text = value;
             }
+        }
+
+        function handleCloneAudioUpload(speakerId, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const speaker = speakers.find(s => s.id === speakerId);
+                if (speaker) {
+                    speaker.config.ref_audio_base64 = e.target.result; // data:audio/...;base64,...
+                    speaker.config.ref_audio_name = file.name;
+                    renderSpeakers();
+                }
+            };
+            reader.readAsDataURL(file);
         }
 
         function updateSpeakerStyle(id, value) {
@@ -1791,6 +2352,7 @@
                 segment.order = order;
                 segments.sort((a, b) => a.order - b.order);
                 renderSegments();
+                updateTimelinePreview();
             }
         }
 
@@ -1802,11 +2364,13 @@
         function updateSegmentText(id, text) {
             const segment = segments.find(s => s.id === id);
             if (segment) segment.text = text;
+            updateTimelinePreview();
         }
 
         function updateSegmentPause(id, pause) {
             const segment = segments.find(s => s.id === id);
             if (segment) segment.pause_after_ms = pause;
+            updateTimelinePreview();
         }
 
         function updateSegmentVolume(id, volume) {
@@ -1840,6 +2404,13 @@
                 return;
             }
 
+            // Validate clone speakers have reference audio
+            const cloneSpeakersWithoutAudio = speakers.filter(s => s.mode === 'clone' && !s.config.ref_audio_base64);
+            if (cloneSpeakersWithoutAudio.length > 0) {
+                showResult('podcast-result', '', `Speaker "${cloneSpeakersWithoutAudio[0].name}" uses Clone Voice but has no reference audio uploaded`, true);
+                return;
+            }
+
             const result = document.getElementById('podcast-result');
             result.innerHTML = '';
 
@@ -1851,6 +2422,9 @@
             const progressStatus = document.getElementById('podcast-progress-status');
 
             try {
+                const isStudio = podcastMode === 'studio' && musicTracks.length > 0;
+                const endpoint = isStudio ? '/api/podcast/render/v3' : '/api/podcast/render';
+
                 const project = {
                     id: 'podcast_' + Date.now(),
                     title: title,
@@ -1866,6 +2440,7 @@
                         order: s.order,
                         speaker_id: s.speaker_id,
                         text: s.text,
+                        kind: 'speech',
                         pause_after_ms: s.pause_after_ms,
                         volume: s.volume,
                         emotion: s.emotion
@@ -1875,9 +2450,28 @@
                     deterministic: deterministic
                 };
 
-                progressStatus.textContent = `Rendering ${segments.length} segments...`;
+                // v3: attach music tracks
+                if (isStudio) {
+                    project.music_tracks = musicTracks.map(mt => ({
+                        id: mt.id,
+                        asset_id: mt.asset_id,
+                        start_ms: mt.start_ms || 0,
+                        end_ms: mt.end_ms,
+                        volume: mt.volume,
+                        duck_under_speech: mt.duck_under_speech,
+                        duck_level: mt.duck_level,
+                        duck_attack_ms: mt.duck_attack_ms,
+                        duck_release_ms: mt.duck_release_ms,
+                        fade_in_ms: mt.fade_in_ms,
+                        fade_out_ms: mt.fade_out_ms,
+                        loop: mt.loop
+                    }));
+                }
+
+                const modeTxt = isStudio ? 'Timeline Studio' : 'Script';
+                progressStatus.textContent = `Rendering ${segments.length} segments${isStudio ? ' + ' + musicTracks.length + ' music tracks' : ''}...`;
                 
-                const response = await fetch(`${API_BASE}/api/podcast/render`, {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1890,11 +2484,32 @@
                     throw new Error(error.detail || 'Podcast generation failed');
                 }
 
+                // v3: Parse timeline metadata from headers
+                const segmentTimingsHeader = response.headers.get('X-Segment-Timings');
+                const totalDurationHeader = response.headers.get('X-Total-Duration-Ms');
+                let segmentTimings = null;
+                let totalDurationMs = 0;
+                
+                if (segmentTimingsHeader) {
+                    try { segmentTimings = JSON.parse(segmentTimingsHeader); } catch(e) {}
+                }
+                if (totalDurationHeader) {
+                    totalDurationMs = parseInt(totalDurationHeader);
+                }
+
                 const blob = await response.blob();
                 const audioUrl = URL.createObjectURL(blob);
                 
                 progressContainer.style.display = 'none';
-                showResult('podcast-result', audioUrl, `✓ Podcast rendered successfully! (${segments.length} segments, ${speakers.length} speakers)`);
+                
+                const trackInfo = isStudio && musicTracks.length > 0 ? `, ${musicTracks.length} music track${musicTracks.length > 1 ? 's' : ''}` : '';
+                showResult('podcast-result', audioUrl, `✓ Podcast rendered successfully! (${segments.length} segments, ${speakers.length} speakers${trackInfo})`);
+
+                // v3: Render timeline visualization
+                if (segmentTimings && totalDurationMs > 0) {
+                    renderTimeline(segmentTimings, totalDurationMs);
+                }
+
             } catch (error) {
                 progressContainer.style.display = 'none';
                 showResult('podcast-result', '', `Error: ${error.message}`, true);
@@ -1904,7 +2519,483 @@
         // Initialize podcast mode when page loads
         window.addEventListener('DOMContentLoaded', () => {
             initPodcastMode();
+            loadAssetLibrary();
         });
+
+        // ===== v3: TIMELINE STUDIO STATE =====
+        let podcastMode = 'simple';   // 'simple' (v2) or 'studio' (v3)
+        let musicTracks = [];         // v3 music track objects
+        let musicTrackCounter = 0;
+        let assetLibrary = [];        // loaded from /api/assets
+        let pendingUploadFile = null;
+
+        // ===== v3: MODE TOGGLE =====
+        function setPodcastMode(mode) {
+            podcastMode = mode;
+            document.getElementById('mode-btn-simple').classList.toggle('active', mode === 'simple');
+            document.getElementById('mode-btn-studio').classList.toggle('active', mode === 'studio');
+            
+            // Show/hide v3 sections
+            document.querySelectorAll('.v3-section').forEach(el => {
+                el.classList.toggle('active', mode === 'studio');
+            });
+            updateTimelinePreview();
+        }
+
+        // ===== v3: MUSIC LIBRARY =====
+        function switchMusicTab(tab) {
+            ['library', 'search', 'upload'].forEach(t => {
+                document.getElementById('mtab-' + t).classList.toggle('active', t === tab);
+                document.getElementById('music-panel-' + t).style.display = t === tab ? 'block' : 'none';
+            });
+        }
+
+        async function loadAssetLibrary() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/assets`);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                assetLibrary = data.assets || [];
+                renderAssetList();
+            } catch (e) {
+                console.warn('Could not load assets:', e);
+            }
+        }
+
+        function renderAssetList() {
+            const container = document.getElementById('asset-list');
+            const badge = document.getElementById('asset-count-badge');
+            badge.textContent = `${assetLibrary.length} asset${assetLibrary.length !== 1 ? 's' : ''}`;
+            
+            if (assetLibrary.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 2rem 0;">No assets yet. Upload or import music to get started.</p>';
+                return;
+            }
+            
+            container.innerHTML = assetLibrary.map(a => {
+                const dur = a.duration_ms ? formatMs(a.duration_ms) : '--:--';
+                const srcIcon = a.source === 'local' ? '💾' : a.source === 'jamendo' ? '🎵' : a.source === 'freesound' ? '🔊' : '🌐';
+                return `
+                <div class="asset-card">
+                    <div class="asset-icon">${srcIcon}</div>
+                    <div class="asset-info">
+                        <div class="asset-name" title="${a.title}">${a.title}</div>
+                        <div class="asset-meta">${a.artist || 'Unknown'} · ${dur} · ${a.source}</div>
+                    </div>
+                    <button class="music-btn-sm accent" onclick="addMusicTrackFromAsset('${a.id}', '${escHtml(a.title)}')" title="Add to timeline">+ Timeline</button>
+                    <button class="music-btn-sm" onclick="deleteAsset('${a.id}')" title="Delete" style="border-color: var(--error); color: var(--error);">✕</button>
+                </div>`;
+            }).join('');
+        }
+
+        function escHtml(s) {
+            return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function formatMs(ms) {
+            const s = Math.floor(ms / 1000);
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        async function deleteAsset(assetId) {
+            if (!confirm('Delete this asset?')) return;
+            try {
+                await fetch(`${API_BASE}/api/assets/${assetId}`, { method: 'DELETE' });
+                // Remove music tracks using this asset
+                musicTracks = musicTracks.filter(mt => mt.asset_id !== assetId);
+                renderMusicTracks();
+                await loadAssetLibrary();
+            } catch (e) {
+                alert('Error deleting asset: ' + e.message);
+            }
+        }
+
+        // ===== v3: MUSIC SEARCH =====
+        async function searchMusic() {
+            const query = document.getElementById('music-search-query').value.trim();
+            const source = document.getElementById('music-search-source').value;
+            if (!query) return;
+            
+            const container = document.getElementById('music-search-results');
+            container.innerHTML = '<p style="text-align: center; padding: 1.5rem;"><span class="spinner-sm"></span> Searching ' + source + '...</p>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/api/music/search?q=${encodeURIComponent(query)}&source=${source}&limit=15`);
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.detail || 'Search failed');
+                }
+                const data = await resp.json();
+                
+                if (!data.results || data.results.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-tertiary); text-align: center; padding: 1.5rem;">No results found. Try different keywords.</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.results.map(r => {
+                    const dur = r.duration_ms ? formatMs(r.duration_ms) : '';
+                    const preview = r.preview_url ? `<button class="music-btn-sm preview-audio-btn" onclick="previewAudio('${r.preview_url}', this)">▶</button>` : '';
+                    return `
+                    <div class="music-result-card">
+                        <div class="music-result-info">
+                            <div class="music-result-title" title="${r.title}">${r.title}</div>
+                            <div class="music-result-meta">${r.artist || 'Unknown'} ${dur ? '· ' + dur : ''} · ${r.license || source}</div>
+                        </div>
+                        <div class="music-result-actions">
+                            ${preview}
+                            <button class="music-btn-sm accent" onclick='importTrack(${JSON.stringify(r).replace(/'/g, "&#39;")})'>Import</button>
+                        </div>
+                    </div>`;
+                }).join('');
+                
+            } catch (e) {
+                container.innerHTML = `<p style="color: var(--error); text-align: center; padding: 1.5rem;">Error: ${e.message}</p>`;
+            }
+        }
+
+        let previewAudioEl = null;
+        let previewCurrentUrl = null;
+        function previewAudio(url, btn) {
+            // If same track is playing, stop it
+            if (previewAudioEl && previewCurrentUrl === url && !previewAudioEl.paused) {
+                previewAudioEl.pause();
+                previewAudioEl.currentTime = 0;
+                if (btn) btn.textContent = '▶';
+                previewCurrentUrl = null;
+                previewAudioEl = null;
+                return;
+            }
+            
+            // Stop any previously playing track and reset its button
+            if (previewAudioEl) {
+                previewAudioEl.pause();
+                previewAudioEl.currentTime = 0;
+            }
+            // Reset ALL preview buttons back to play icon
+            document.querySelectorAll('.preview-audio-btn').forEach(b => b.textContent = '▶');
+            
+            previewAudioEl = new Audio(url);
+            previewAudioEl.volume = 0.5;
+            previewCurrentUrl = url;
+            
+            // When track ends, reset button
+            previewAudioEl.addEventListener('ended', () => {
+                if (btn) btn.textContent = '▶';
+                previewCurrentUrl = null;
+            });
+            
+            previewAudioEl.play().then(() => {
+                if (btn) btn.textContent = '⏹';
+            }).catch(e => console.warn('Preview blocked:', e));
+        }
+
+        async function importTrack(result) {
+            try {
+                const resp = await fetch(`${API_BASE}/api/music/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: result.download_url || result.preview_url,
+                        title: result.title,
+                        artist: result.artist,
+                        source: result.source,
+                        source_url: result.source_url || '',
+                        license: result.license || '',
+                        duration_ms: result.duration_ms || 0,
+                        tags: result.tags || []
+                    })
+                });
+                if (!resp.ok) throw new Error((await resp.json()).detail || 'Import failed');
+                
+                const data = await resp.json();
+                await loadAssetLibrary();
+                switchMusicTab('library');
+                alert(`✓ Imported "${result.title}" to your library!`);
+            } catch (e) {
+                alert('Import error: ' + e.message);
+            }
+        }
+
+        // ===== v3: FILE UPLOAD =====
+        function handleMusicFileDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file) prepareMusicUpload(file);
+        }
+
+        function handleMusicFileSelect(input) {
+            if (input.files[0]) prepareMusicUpload(input.files[0]);
+        }
+
+        function prepareMusicUpload(file) {
+            pendingUploadFile = file;
+            document.getElementById('upload-form-fields').style.display = 'block';
+            document.getElementById('upload-title').value = file.name.replace(/\.[^.]+$/, '');
+            document.getElementById('upload-zone').querySelector('.upload-zone-text').innerHTML = 
+                `🎵 Selected: <strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+        }
+
+        async function uploadMusicFile() {
+            if (!pendingUploadFile) return;
+            const title = document.getElementById('upload-title').value.trim() || 'Untitled';
+            const artist = document.getElementById('upload-artist').value.trim();
+            
+            const formData = new FormData();
+            formData.append('file', pendingUploadFile);
+            formData.append('title', title);
+            if (artist) formData.append('artist', artist);
+            
+            try {
+                const resp = await fetch(`${API_BASE}/api/assets/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!resp.ok) throw new Error((await resp.json()).detail || 'Upload failed');
+                
+                pendingUploadFile = null;
+                document.getElementById('upload-form-fields').style.display = 'none';
+                document.getElementById('upload-zone').querySelector('.upload-zone-text').innerHTML = 
+                    '🎵 Drop audio file here or <strong>click to browse</strong>';
+                document.getElementById('music-file-input').value = '';
+                
+                await loadAssetLibrary();
+                switchMusicTab('library');
+                alert(`✓ "${title}" uploaded to your library!`);
+            } catch (e) {
+                alert('Upload error: ' + e.message);
+            }
+        }
+
+        // ===== v3: MUSIC TRACKS MANAGEMENT =====
+        function addMusicTrack() {
+            if (assetLibrary.length === 0) {
+                alert('No assets in library. Upload or import music first.');
+                return;
+            }
+            const firstAsset = assetLibrary[0];
+            addMusicTrackFromAsset(firstAsset.id, firstAsset.title);
+        }
+
+        function addMusicTrackFromAsset(assetId, assetTitle) {
+            const track = {
+                id: `mt_${++musicTrackCounter}`,
+                asset_id: assetId,
+                asset_title: assetTitle,
+                start_ms: 0,
+                end_ms: null,
+                volume: 0.3,
+                duck_under_speech: true,
+                duck_level: 0.2,
+                duck_attack_ms: 200,
+                duck_release_ms: 400,
+                fade_in_ms: 500,
+                fade_out_ms: 500,
+                loop: true
+            };
+            musicTracks.push(track);
+            renderMusicTracks();
+            updateTimelinePreview();
+            
+            // Auto-switch to studio mode
+            if (podcastMode !== 'studio') setPodcastMode('studio');
+        }
+
+        function removeMusicTrack(id) {
+            musicTracks = musicTracks.filter(mt => mt.id !== id);
+            renderMusicTracks();
+            updateTimelinePreview();
+        }
+
+        function updateMusicTrack(id, field, value) {
+            const track = musicTracks.find(mt => mt.id === id);
+            if (!track) return;
+            if (field === 'volume' || field === 'duck_level') {
+                track[field] = parseFloat(value);
+            } else if (field === 'start_ms' || field === 'end_ms' || field === 'duck_attack_ms' || field === 'duck_release_ms' || field === 'fade_in_ms' || field === 'fade_out_ms') {
+                track[field] = value === '' ? null : parseInt(value);
+            } else if (field === 'duck_under_speech' || field === 'loop') {
+                track[field] = value;
+            } else if (field === 'asset_id') {
+                track.asset_id = value;
+                const asset = assetLibrary.find(a => a.id === value);
+                if (asset) track.asset_title = asset.title;
+            }
+            updateTimelinePreview();
+        }
+
+        function renderMusicTracks() {
+            const container = document.getElementById('music-tracks-list');
+            
+            if (musicTracks.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 1rem 0;">No music tracks. Add one to layer background music under your speech.</p>';
+                return;
+            }
+            
+            container.innerHTML = musicTracks.map((mt, idx) => `
+                <div class="music-track-card">
+                    <div class="music-track-header">
+                        <div class="music-track-name">🎵 Track ${idx + 1}: ${mt.asset_title || mt.asset_id}</div>
+                        <button onclick="removeMusicTrack('${mt.id}')" 
+                                style="background: transparent; border: 2px solid var(--error); color: var(--error); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.75rem; transition: all 0.2s;"
+                                onmouseover="this.style.background='var(--error)'; this.style.color='white';"
+                                onmouseout="this.style.background='transparent'; this.style.color='var(--error)';">✕</button>
+                    </div>
+                    <div class="music-track-controls">
+                        <div class="music-track-control">
+                            <label title="Which music file from your library to use for this track">Asset</label>
+                            <select onchange="updateMusicTrack('${mt.id}', 'asset_id', this.value)">
+                                ${assetLibrary.map(a => `<option value="${a.id}" ${a.id === mt.asset_id ? 'selected' : ''}>${a.title}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="music-track-control">
+                            <label title="When this music track starts playing on the timeline (in milliseconds from the beginning)">Start (ms)</label>
+                            <input type="number" value="${mt.start_ms}" min="0" step="500" onchange="updateMusicTrack('${mt.id}', 'start_ms', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="When this music track stops playing. Leave empty to play until the end of the podcast.">End (ms)</label>
+                            <input type="number" value="${mt.end_ms || ''}" min="0" step="500" placeholder="Auto" onchange="updateMusicTrack('${mt.id}', 'end_ms', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Music volume level (0 = silent, 1 = full volume). Typical background music is 0.2–0.4.">Volume</label>
+                            <input type="number" value="${mt.volume}" min="0" max="1" step="0.05" onchange="updateMusicTrack('${mt.id}', 'volume', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Volume level the music ducks to when someone is speaking (0 = mute during speech, 1 = no ducking)">Duck Level</label>
+                            <input type="number" value="${mt.duck_level}" min="0" max="1" step="0.05" onchange="updateMusicTrack('${mt.id}', 'duck_level', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Gradual volume increase at the start of the track (in milliseconds)">Fade In (ms)</label>
+                            <input type="number" value="${mt.fade_in_ms}" min="0" step="100" onchange="updateMusicTrack('${mt.id}', 'fade_in_ms', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Gradual volume decrease at the end of the track (in milliseconds)">Fade Out (ms)</label>
+                            <input type="number" value="${mt.fade_out_ms}" min="0" step="100" onchange="updateMusicTrack('${mt.id}', 'fade_out_ms', this.value)">
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Automatically lower music volume when someone is speaking, then restore it during pauses">Ducking</label>
+                            <select onchange="updateMusicTrack('${mt.id}', 'duck_under_speech', this.value === 'true')">
+                                <option value="true" ${mt.duck_under_speech ? 'selected' : ''}>On</option>
+                                <option value="false" ${!mt.duck_under_speech ? 'selected' : ''}>Off</option>
+                            </select>
+                        </div>
+                        <div class="music-track-control">
+                            <label title="Repeat the track if it ends before the podcast does. Useful for short ambient loops.">Loop</label>
+                            <select onchange="updateMusicTrack('${mt.id}', 'loop', this.value === 'true')">
+                                <option value="true" ${mt.loop ? 'selected' : ''}>Yes</option>
+                                <option value="false" ${!mt.loop ? 'selected' : ''}>No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== v3: LIVE TIMELINE PREVIEW (estimates before render) =====
+        function updateTimelinePreview() {
+            // Only update preview in studio mode
+            if (podcastMode !== 'studio') return;
+            if (segments.length === 0 && musicTracks.length === 0) {
+                document.getElementById('timeline-rows').innerHTML = '<p style="color: var(--text-tertiary); font-style: italic; text-align: center; padding: 1rem 0; font-size: 0.8125rem;">Add segments or music tracks to see a live preview</p>';
+                document.getElementById('timeline-ruler').innerHTML = '';
+                document.getElementById('timeline-duration-badge').textContent = '0:00';
+                return;
+            }
+
+            // Estimate segment durations: ~120ms per character + pause
+            const estimatedTimings = [];
+            let cursor = 0;
+            segments.forEach((seg, i) => {
+                const charCount = (seg.text || '').length;
+                const speechMs = Math.max(charCount * 120, 500); // min 0.5s per segment
+                estimatedTimings.push({
+                    index: i,
+                    start_ms: cursor,
+                    duration_ms: speechMs,
+                    end_ms: cursor + speechMs,
+                    speaker: speakers.find(s => s.id === seg.speaker_id)?.name || '?'
+                });
+                cursor += speechMs + (seg.pause_after_ms || 0);
+            });
+
+            // Total duration = max of speech end or music track ends
+            let totalDurationMs = cursor;
+            musicTracks.forEach(mt => {
+                const mtEnd = mt.end_ms || totalDurationMs;
+                if (mtEnd > totalDurationMs) totalDurationMs = mtEnd;
+            });
+            totalDurationMs = Math.max(totalDurationMs, 1000); // min 1s
+
+            // Render using the same visual engine, with an "(estimated)" badge
+            renderTimelineVisual(estimatedTimings, totalDurationMs, true);
+        }
+
+        // ===== v3: TIMELINE VISUALIZATION (shared renderer) =====
+        function renderTimeline(segmentTimings, totalDurationMs) {
+            // Called after actual render — use real data
+            renderTimelineVisual(segmentTimings, totalDurationMs, false);
+        }
+
+        function renderTimelineVisual(segmentTimings, totalDurationMs, isEstimate) {
+            const rulerEl = document.getElementById('timeline-ruler');
+            const rowsEl = document.getElementById('timeline-rows');
+            const badge = document.getElementById('timeline-duration-badge');
+            
+            const totalSec = totalDurationMs / 1000;
+            badge.textContent = formatMs(totalDurationMs) + (isEstimate ? ' ~est' : '');
+            
+            // Calculate pixels per ms (fit into ~700px)
+            const trackWidth = 700;
+            const pxPerMs = trackWidth / totalDurationMs;
+            
+            // Ruler ticks
+            const tickInterval = totalSec <= 10 ? 1000 : totalSec <= 30 ? 2000 : totalSec <= 60 ? 5000 : 10000;
+            let rulerHtml = '';
+            for (let t = 0; t <= totalDurationMs; t += tickInterval) {
+                const left = t * pxPerMs;
+                rulerHtml += `<span class="timeline-ruler-tick" style="left: ${left}px;">${formatMs(t)}</span>`;
+            }
+            rulerEl.innerHTML = rulerHtml;
+            rulerEl.style.width = trackWidth + 'px';
+            
+            // Speech row
+            let speechBlocksHtml = '';
+            if (segmentTimings) {
+                segmentTimings.forEach((st, i) => {
+                    const left = st.start_ms * pxPerMs;
+                    const width = Math.max(st.duration_ms * pxPerMs, 4);
+                    const speakerLabel = st.speaker ? st.speaker : `S${i+1}`;
+                    const tipPrefix = isEstimate ? '≈ ' : '';
+                    speechBlocksHtml += `<div class="tl-block speech${isEstimate ? ' estimated' : ''}" style="left:${left}px; width:${width}px;" title="${tipPrefix}${speakerLabel}: ${formatMs(st.start_ms)} → ${formatMs(st.end_ms)}">${speakerLabel}</div>`;
+                });
+            }
+            
+            let rowsHtml = '';
+            if (isEstimate) {
+                rowsHtml += `<div style="font-size: 0.6875rem; color: var(--text-tertiary); font-style: italic; margin-bottom: 0.375rem;">⏱ Estimated layout — actual timing calculated after render</div>`;
+            }
+            rowsHtml += `
+                <div class="timeline-row">
+                    <div class="timeline-row-label">Speech</div>
+                    <div class="timeline-row-track" style="width:${trackWidth}px;">${speechBlocksHtml}</div>
+                </div>`;
+            
+            // Music rows
+            musicTracks.forEach((mt, i) => {
+                const startPx = (mt.start_ms || 0) * pxPerMs;
+                const endMs = mt.end_ms || totalDurationMs;
+                const widthPx = Math.max((endMs - (mt.start_ms || 0)) * pxPerMs, 4);
+                rowsHtml += `
+                <div class="timeline-row">
+                    <div class="timeline-row-label">Music ${i+1}</div>
+                    <div class="timeline-row-track" style="width:${trackWidth}px;">
+                        <div class="tl-block music${isEstimate ? ' estimated' : ''}" style="left:${startPx}px; width:${widthPx}px;" title="${mt.asset_title}: ${formatMs(mt.start_ms||0)} → ${formatMs(endMs)}">🎵 ${mt.asset_title || ''}</div>
+                    </div>
+                </div>`;
+            });
+            
+            rowsEl.innerHTML = rowsHtml;
+        }
 
         function switchTab(index) {
             // Remove active class from all tabs and contents

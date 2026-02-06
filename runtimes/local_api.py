@@ -27,7 +27,8 @@ from core.model_manager import ModelManager
 from core.tts_engine import TTSEngine
 from services.tts_service import TTSService
 from services.podcast_service import PodcastService
-from services.podcast_models import PodcastProject, Speaker as PodcastSpeaker, Segment as PodcastSegment
+from services.podcast_models import PodcastProject, Speaker as PodcastSpeaker, Segment as PodcastSegment, MusicTrack, AudioAsset, AssetSource
+from services.music_service import MusicService
 from infra.storage import LocalStorage
 from core.audio_pipeline import load_audio_from_bytes
 
@@ -70,6 +71,10 @@ engine = TTSEngine(model_manager=model_manager)
 service = TTSService(engine=engine)
 podcast_service = PodcastService(engine=engine)
 
+# Initialize music service (v3)
+music_config = config.get('music_apis', {})
+music_service = MusicService(config=music_config)
+
 # ===== FASTAPI APP =====
 
 app = FastAPI(
@@ -85,6 +90,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Segment-Timings", "X-Total-Duration-Ms"],
 )
 
 # Progress tracking (runtime-specific)
@@ -488,6 +494,45 @@ async def download_audio(filename: str):
         filename=filename
     )
 
+# ===== PODCAST HELPERS =====
+
+def _resolve_clone_speakers(speakers_list, storage_obj):
+    """
+    For clone-mode speakers that carry base64 reference audio,
+    decode the audio into a temp file and replace the config with
+    a local 'ref_audio_path' the engine can consume.
+    
+    Returns list of temp file paths to clean up after rendering.
+    """
+    import base64 as b64mod
+    temp_paths = []
+    
+    for speaker_dict in speakers_list:
+        if speaker_dict.get('mode') != 'clone':
+            continue
+        cfg = speaker_dict.get('config', {})
+        b64_data = cfg.get('ref_audio_base64')
+        if not b64_data:
+            continue
+        
+        # Strip data URI prefix: "data:audio/wav;base64,AAAA..."
+        if ',' in b64_data:
+            b64_data = b64_data.split(',', 1)[1]
+        
+        audio_bytes = b64mod.b64decode(b64_data)
+        temp_path = storage_obj.get_temp_path(f"{uuid.uuid4()}_clone_ref.wav")
+        temp_path.write_bytes(audio_bytes)
+        temp_paths.append(temp_path)
+        
+        # Replace config: remove base64 blob, set file path
+        cfg['ref_audio_path'] = str(temp_path)
+        cfg.pop('ref_audio_base64', None)
+        cfg.pop('ref_audio_name', None)
+        
+        logger.info(f"Clone speaker '{speaker_dict.get('name', speaker_dict['id'])}': saved ref audio → {temp_path}")
+    
+    return temp_paths
+
 # ===== PODCAST ENDPOINT =====
 
 @app.post("/api/podcast/render")
@@ -504,138 +549,599 @@ async def render_podcast(request: Request):
         # Parse JSON directly from request body
         project_dict = await request.json()
         
-        # Build dataclasses
-        speakers = [
-            PodcastSpeaker(
-                id=s['id'],
-                name=s['name'],
-                mode=s['mode'],
-                config=s['config'],
-                style_instruction=s.get('style_instruction')
-            )
-            for s in project_dict['speakers']
-        ]
+        # Resolve clone speaker ref audio (base64 → temp file)
+        clone_temp_files = _resolve_clone_speakers(project_dict.get('speakers', []), storage)
         
-        segments = [
-            PodcastSegment(
-                id=seg['id'],
-                order=seg['order'],
-                speaker_id=seg['speaker_id'],
-                text=seg['text'],
-                pause_after_ms=seg.get('pause_after_ms', 500),
-                volume=seg.get('volume', 1.0),
-                emotion=seg.get('emotion')
-            )
-            for seg in project_dict['segments']
-        ]
-        
-        project = PodcastProject(
-            id=project_dict['id'],
-            title=project_dict['title'],
-            speakers=speakers,
-            segments=segments,
-            output_format=project_dict.get('output_format', 'wav'),
-            target_sample_rate=project_dict.get('target_sample_rate', 44100),
-            deterministic=project_dict.get('deterministic', True)
-        )
-        
-        # Validate
-        podcast_service.validate_project(project)
-        
-        # Load required models based on speaker modes
-        required_models = set()
-        for speaker in project.speakers:
-            if speaker.mode == "custom":
-                required_models.add("custom_voice")
-            elif speaker.mode == "design":
-                required_models.add("voice_design")
-            elif speaker.mode == "clone":
-                required_models.add("voice_clone")
-        
-        logger.info(f"Loading models: {required_models}")
-        for model_name in required_models:
-            model_manager.ensure_model_loaded(model_name)
-        
-        # Precompute prompts
-        prompt_cache = podcast_service._precompute_speaker_prompts(project.speakers)
-        
-        # Build speaker map
-        speaker_map = {s.id: s for s in project.speakers}
-        
-        # Sort segments
-        sorted_segments = sorted(project.segments, key=lambda s: s.order)
-        total_segments = len(sorted_segments)
-        
-        logger.info(f"Rendering podcast: {project.title} ({total_segments} segments, {len(project.speakers)} speakers)")
-        
-        # Render segments with progress (runtime controls progress)
-        from core.audio_pipeline import generate_silence
-        import numpy as np
-        
-        arrays = []
-        sample_rate = None
-        
-        for i, segment in enumerate(sorted_segments):
-            speaker = speaker_map[segment.speaker_id]
-            
-            logger.info(f"Rendering segment {i+1}/{total_segments}: {speaker.name} - '{segment.text[:50]}...'")
-            
-            # Render segment
-            audio_array, sr = podcast_service.render_segment(
-                segment=segment,
-                speaker=speaker,
-                prompt_cache=prompt_cache,
-                deterministic=project.deterministic
-            )
-            
-            if sample_rate is None:
-                sample_rate = sr
-            
-            arrays.append(audio_array)
-            
-            # Add silence
-            if segment.pause_after_ms > 0:
-                silence = generate_silence(
-                    duration_ms=segment.pause_after_ms,
-                    sample_rate=sr,
-                    reference_array=audio_array
+        try:
+            # Build dataclasses
+            speakers = [
+                PodcastSpeaker(
+                    id=s['id'],
+                    name=s['name'],
+                    mode=s['mode'],
+                    config=s['config'],
+                    style_instruction=s.get('style_instruction')
                 )
-                arrays.append(silence)
-        
-        # Memory-safe concatenation
-        total_length = sum(len(arr) for arr in arrays)
-        final_array = np.zeros(total_length, dtype=arrays[0].dtype)
-        
-        offset = 0
-        for arr in arrays:
-            final_array[offset:offset + len(arr)] = arr
-            offset += len(arr)
-        
-        logger.info(f"Concatenated {total_segments} segments: {total_length} samples")
-        
-        # Encode
-        from core.audio_pipeline import to_wav_bytes
-        if sample_rate is None:
-            raise RuntimeError("No audio generated - sample_rate is None")
-        
-        audio_bytes = to_wav_bytes(final_array, sample_rate, project.target_sample_rate)
-        
-        # Save
-        filename = f"podcast_{project.id}.{project.output_format}"
-        file_path = storage.save_audio(audio_bytes, filename)
-        
-        logger.info(f"Podcast saved: {file_path}")
-        
-        logger.info(f"Podcast rendered: {file_path}")
-        
-        return FileResponse(
-            path=file_path,
-            media_type="audio/wav",
-            filename=Path(file_path).name
-        )
-        
+                for s in project_dict['speakers']
+            ]
+            
+            segments = [
+                PodcastSegment(
+                    id=seg['id'],
+                    order=seg['order'],
+                    speaker_id=seg['speaker_id'],
+                    text=seg['text'],
+                    pause_after_ms=seg.get('pause_after_ms', 500),
+                    volume=seg.get('volume', 1.0),
+                    emotion=seg.get('emotion')
+                )
+                for seg in project_dict['segments']
+            ]
+            
+            project = PodcastProject(
+                id=project_dict['id'],
+                title=project_dict['title'],
+                speakers=speakers,
+                segments=segments,
+                output_format=project_dict.get('output_format', 'wav'),
+                target_sample_rate=project_dict.get('target_sample_rate', 44100),
+                deterministic=project_dict.get('deterministic', True)
+            )
+            
+            # Validate
+            podcast_service.validate_project(project)
+            
+            # Load required models based on speaker modes
+            required_models = set()
+            for speaker in project.speakers:
+                if speaker.mode == "custom":
+                    required_models.add("custom_voice")
+                elif speaker.mode == "design":
+                    required_models.add("voice_design")
+                elif speaker.mode == "clone":
+                    required_models.add("base_clone")
+            
+            logger.info(f"Loading models: {required_models}")
+            for model_name in required_models:
+                model_manager.ensure_model_loaded(model_name)
+            
+            # Precompute prompts
+            prompt_cache = podcast_service._precompute_speaker_prompts(project.speakers)
+            
+            # Build speaker map
+            speaker_map = {s.id: s for s in project.speakers}
+            
+            # Sort segments
+            sorted_segments = sorted(project.segments, key=lambda s: s.order)
+            total_segments = len(sorted_segments)
+            
+            logger.info(f"Rendering podcast: {project.title} ({total_segments} segments, {len(project.speakers)} speakers)")
+            
+            # Render segments with progress (runtime controls progress)
+            from core.audio_pipeline import generate_silence
+            import numpy as np
+            
+            arrays = []
+            sample_rate = None
+            failed_segments = []
+            
+            for i, segment in enumerate(sorted_segments):
+                speaker = speaker_map[segment.speaker_id]
+                
+                logger.info(f"Rendering segment {i+1}/{total_segments}: {speaker.name} - '{segment.text[:50]}...'")
+                
+                try:
+                    # Render segment (includes retry logic in podcast_service)
+                    audio_array, sr = podcast_service.render_segment(
+                        segment=segment,
+                        speaker=speaker,
+                        prompt_cache=prompt_cache,
+                        deterministic=project.deterministic
+                    )
+                    
+                    if sample_rate is None:
+                        sample_rate = sr
+                    
+                    arrays.append(audio_array)
+                    
+                except Exception as seg_error:
+                    # Segment failed even after retries — log and insert brief silence placeholder
+                    logger.error(f"Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
+                    failed_segments.append((i+1, speaker.name, str(seg_error)))
+                    
+                    # Use known sample rate or default
+                    sr = sample_rate or 24000
+                    if sample_rate is None:
+                        sample_rate = sr
+                    
+                    # Insert 200ms silence placeholder (not the full pause — avoids long gaps)
+                    placeholder = generate_silence(duration_ms=200, sample_rate=sr)
+                    arrays.append(placeholder)
+                
+                # Add pause between segments
+                if segment.pause_after_ms > 0 and sample_rate is not None:
+                    silence = generate_silence(
+                        duration_ms=segment.pause_after_ms,
+                        sample_rate=sample_rate,
+                        reference_array=arrays[-1]
+                    )
+                    arrays.append(silence)
+            
+            if failed_segments:
+                logger.warning(f"{len(failed_segments)}/{total_segments} segments failed: {failed_segments}")
+            
+            # Memory-safe concatenation
+            total_length = sum(len(arr) for arr in arrays)
+            final_array = np.zeros(total_length, dtype=arrays[0].dtype)
+            
+            offset = 0
+            for arr in arrays:
+                final_array[offset:offset + len(arr)] = arr
+                offset += len(arr)
+            
+            logger.info(f"Concatenated {total_segments} segments: {total_length} samples")
+            
+            # Encode
+            from core.audio_pipeline import to_wav_bytes
+            if sample_rate is None:
+                raise RuntimeError("No audio generated - sample_rate is None")
+            
+            audio_bytes = to_wav_bytes(final_array, sample_rate, project.target_sample_rate)
+            
+            # Save
+            filename = f"podcast_{project.id}.{project.output_format}"
+            file_path = storage.save_audio(audio_bytes, filename)
+            
+            logger.info(f"Podcast saved: {file_path}")
+            
+            logger.info(f"Podcast rendered: {file_path}")
+            
+            return FileResponse(
+                path=file_path,
+                media_type="audio/wav",
+                filename=Path(file_path).name
+            )
+        finally:
+            # Clean up clone ref audio temp files
+            for tmp in clone_temp_files:
+                try:
+                    if tmp.exists():
+                        tmp.unlink()
+                except Exception:
+                    pass
+    
     except Exception as e:
         logger.error(f"Error rendering podcast: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== v3: MUSIC LIBRARY ENDPOINTS =====
+
+@app.get("/api/assets")
+async def list_assets():
+    """List all assets in the local library"""
+    try:
+        assets = storage.list_assets()
+        return {"assets": assets, "count": len(assets)}
+    except Exception as e:
+        logger.error(f"Error listing assets: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/assets/upload")
+async def upload_asset(
+    file: UploadFile = File(...),
+    title: Optional[str] = Form(None),
+    artist: Optional[str] = Form(None),
+    tags: Optional[str] = Form(None)
+):
+    """Upload a local audio file to the asset library"""
+    try:
+        audio_bytes = await file.read()
+        
+        # Determine format from filename
+        ext = Path(file.filename).suffix.lstrip('.') if file.filename else 'mp3'
+        
+        # Try to get duration
+        duration_ms = 0
+        try:
+            from core.audio_pipeline import load_audio_from_bytes
+            audio_array, sr = load_audio_from_bytes(audio_bytes)
+            duration_ms = int(len(audio_array) / sr * 1000)
+        except Exception:
+            pass
+        
+        metadata = {
+            'title': title or (Path(file.filename).stem if file.filename else 'Uploaded'),
+            'source': 'local',
+            'source_url': '',
+            'duration_ms': duration_ms,
+            'license': 'local',
+            'attribution': '',
+            'artist': artist or '',
+            'tags': [t.strip() for t in (tags or '').split(',')] if tags else [],
+            'format': ext,
+        }
+        
+        result = storage.save_asset(audio_bytes, metadata)
+        return {"asset": result}
+        
+    except Exception as e:
+        logger.error(f"Error uploading asset: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/assets/{asset_id}")
+async def delete_asset(asset_id: str):
+    """Delete an asset from the library"""
+    try:
+        deleted = storage.delete_asset(asset_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Asset not found: {asset_id}")
+        return {"deleted": True, "asset_id": asset_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting asset: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/music/search")
+async def search_music(
+    q: str,
+    source: str = "jamendo",
+    limit: int = 20,
+    instrumental: bool = True
+):
+    """
+    Search for music from external sources (Jamendo, Openverse, Freesound)
+    
+    Proxied through backend to avoid CORS issues.
+    """
+    try:
+        results = await music_service.search(
+            query=q,
+            source=source,
+            limit=limit,
+            instrumental_only=instrumental
+        )
+        return {
+            "results": [r.to_dict() for r in results],
+            "count": len(results),
+            "source": source,
+            "query": q
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error searching music: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/music/import")
+async def import_music(request: Request):
+    """
+    Import a track from external source into local asset library
+    
+    Body: {
+        "url": "https://...",
+        "title": "Track Name",
+        "artist": "Artist",
+        "source": "jamendo",
+        "source_url": "https://...",
+        "license": "CC BY 4.0",
+        "duration_ms": 180000,
+        "tags": ["ambient", "electronic"]
+    }
+    """
+    try:
+        data = await request.json()
+        url = data.get('url')
+        
+        if not url:
+            raise HTTPException(status_code=400, detail="Missing 'url' field")
+        
+        # Download the audio
+        audio_bytes = await music_service.download_track(url)
+        
+        # Determine format
+        ext = 'mp3'
+        if '.ogg' in url:
+            ext = 'ogg'
+        elif '.wav' in url:
+            ext = 'wav'
+        elif '.flac' in url:
+            ext = 'flac'
+        
+        # Try to get actual duration from audio
+        duration_ms = data.get('duration_ms', 0)
+        try:
+            from core.audio_pipeline import load_audio_from_bytes
+            audio_array, sr = load_audio_from_bytes(audio_bytes)
+            duration_ms = int(len(audio_array) / sr * 1000)
+        except Exception:
+            pass
+        
+        metadata = {
+            'title': data.get('title', 'Imported'),
+            'source': data.get('source', 'unknown'),
+            'source_url': data.get('source_url', url),
+            'duration_ms': duration_ms,
+            'license': data.get('license', 'unknown'),
+            'attribution': data.get('attribution', ''),
+            'artist': data.get('artist', 'Unknown'),
+            'tags': data.get('tags', []),
+            'format': ext,
+        }
+        
+        result = storage.save_asset(audio_bytes, metadata)
+        return {"asset": result}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error importing music: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===== v3: TIMELINE RENDER ENDPOINT =====
+
+@app.post("/api/podcast/render/v3")
+async def render_podcast_v3(request: Request):
+    """
+    v3 Timeline render: speech + music tracks with ducking
+    
+    Accepts the full v3 project format with music_tracks.
+    Uses absolute timeline positioning instead of sequential concatenation.
+    """
+    try:
+        from core.audio_pipeline import (
+            generate_silence, to_wav_bytes, mix_timeline,
+            loop_to_length, trim_audio, apply_fade, resample,
+            load_audio_from_bytes as load_audio
+        )
+
+        project_dict = await request.json()
+        
+        # Resolve clone speaker ref audio (base64 → temp file)
+        clone_temp_files = _resolve_clone_speakers(project_dict.get('speakers', []), storage)
+        
+        try:
+            # Build speakers and segments (same as v2)
+            speakers = [
+                PodcastSpeaker(
+                    id=s['id'],
+                    name=s['name'],
+                    mode=s['mode'],
+                    config=s['config'],
+                    style_instruction=s.get('style_instruction')
+                )
+                for s in project_dict['speakers']
+            ]
+            
+            segments = [
+                PodcastSegment(
+                    id=seg['id'],
+                    order=seg['order'],
+                    speaker_id=seg.get('speaker_id', ''),
+                    text=seg.get('text', ''),
+                    kind=seg.get('kind', 'speech'),
+                    start_ms=seg.get('start_ms'),
+                    pause_after_ms=seg.get('pause_after_ms', 500),
+                    volume=seg.get('volume', 1.0),
+                    emotion=seg.get('emotion')
+                )
+                for seg in project_dict.get('segments', [])
+            ]
+            
+            # Build music tracks
+            music_tracks = [
+                MusicTrack(
+                    id=mt['id'],
+                    asset_id=mt['asset_id'],
+                    start_ms=mt.get('start_ms', 0),
+                    end_ms=mt.get('end_ms'),
+                    volume=mt.get('volume', 0.3),
+                    duck_under_speech=mt.get('duck_under_speech', True),
+                    duck_level=mt.get('duck_level', 0.2),
+                    duck_attack_ms=mt.get('duck_attack_ms', 200),
+                    duck_release_ms=mt.get('duck_release_ms', 400),
+                    fade_in_ms=mt.get('fade_in_ms', 500),
+                    fade_out_ms=mt.get('fade_out_ms', 500),
+                    loop=mt.get('loop', True)
+                )
+                for mt in project_dict.get('music_tracks', [])
+            ]
+            
+            deterministic = project_dict.get('deterministic', True)
+            target_sr = project_dict.get('target_sample_rate', 44100)
+            
+            # Load required TTS models
+            speech_segments = [s for s in segments if s.kind == 'speech']
+            required_models = set()
+            for speaker in speakers:
+                if speaker.mode == "custom":
+                    required_models.add("custom_voice")
+                elif speaker.mode == "design":
+                    required_models.add("voice_design")
+                elif speaker.mode == "clone":
+                    required_models.add("base_clone")
+            
+            for model_name in required_models:
+                model_manager.ensure_model_loaded(model_name)
+        
+            logger.info(f"v3 Render: {len(speech_segments)} speech segments, {len(music_tracks)} music tracks")
+            
+            import numpy as np
+            
+            # === Phase 1: Render all speech segments ===
+            speaker_map = {s.id: s for s in speakers}
+            prompt_cache = podcast_service._precompute_speaker_prompts(speakers)
+            sorted_speech = sorted(speech_segments, key=lambda s: s.order)
+            
+            # Render each speech segment and track positions
+            speech_results = []  # List of (start_ms, audio_array, duration_ms)
+            current_ms = 0  # Running position for auto-sequential
+            engine_sr = None
+            failed_segments_v3 = []
+            
+            for i, segment in enumerate(sorted_speech):
+                speaker = speaker_map.get(segment.speaker_id)
+                if not speaker:
+                    raise ValueError(f"Speaker not found: {segment.speaker_id}")
+                
+                logger.info(f"Rendering speech {i+1}/{len(sorted_speech)}: {speaker.name}")
+                
+                try:
+                    audio_array, sr = podcast_service.render_segment(
+                        segment=segment,
+                        speaker=speaker,
+                        prompt_cache=prompt_cache,
+                        deterministic=deterministic
+                    )
+                except Exception as seg_error:
+                    # Segment failed even after retries — insert tiny placeholder
+                    logger.error(f"v3 Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
+                    failed_segments_v3.append((i+1, speaker.name, str(seg_error)))
+                    sr = engine_sr or 24000
+                    # 200ms silence placeholder instead of dead air
+                    audio_array = np.zeros(int(0.2 * sr), dtype=np.float32)
+                
+                if engine_sr is None:
+                    engine_sr = sr
+                
+                # Determine timeline position
+                if segment.start_ms is not None:
+                    pos_ms = segment.start_ms
+                else:
+                    pos_ms = current_ms  # Auto-sequential fallback
+                
+                duration_ms = int(len(audio_array) / sr * 1000)
+                speech_results.append((pos_ms, audio_array, duration_ms))
+                
+                # Advance auto position
+                current_ms = pos_ms + duration_ms + segment.pause_after_ms
+            
+            if failed_segments_v3:
+                logger.warning(f"v3: {len(failed_segments_v3)}/{len(sorted_speech)} segments failed: {failed_segments_v3}")
+            
+            if engine_sr is None:
+                engine_sr = 24000  # Default engine sample rate
+            
+            # === Phase 2: Calculate total timeline duration ===
+            max_speech_end = 0
+            for pos_ms, audio, dur_ms in speech_results:
+                end = pos_ms + dur_ms
+                if end > max_speech_end:
+                    max_speech_end = end
+            
+            max_music_end = 0
+            for mt in music_tracks:
+                if mt.end_ms and mt.end_ms > max_music_end:
+                    max_music_end = mt.end_ms
+            
+            total_duration_ms = max(max_speech_end, max_music_end) + 1000  # 1s padding
+            total_samples = int(total_duration_ms / 1000.0 * engine_sr)
+            
+            # === Phase 3: Build speech placements ===
+            speech_placements = []
+            for pos_ms, audio, dur_ms in speech_results:
+                offset_samples = int(pos_ms / 1000.0 * engine_sr)
+                speech_placements.append((offset_samples, audio))
+            
+            # === Phase 4: Build music placements ===
+            music_placements = []
+            for mt in music_tracks:
+                try:
+                    asset_audio_bytes = storage.load_asset_audio(mt.asset_id)
+                    asset_audio, asset_sr = load_audio(asset_audio_bytes)
+                    
+                    # Resample to match engine
+                    if asset_sr != engine_sr:
+                        asset_audio = resample(asset_audio, asset_sr, engine_sr)
+                    
+                    # Calculate duration
+                    start_samples = int(mt.start_ms / 1000.0 * engine_sr)
+                    if mt.end_ms is not None:
+                        end_samples = int(mt.end_ms / 1000.0 * engine_sr)
+                        target_len = end_samples - start_samples
+                    else:
+                        target_len = total_samples - start_samples
+                    
+                    # Loop or trim to fit
+                    if mt.loop and len(asset_audio) < target_len:
+                        asset_audio = loop_to_length(asset_audio, target_len)
+                    else:
+                        asset_audio = asset_audio[:target_len]
+                    
+                    music_placements.append({
+                        'audio': asset_audio,
+                        'offset_samples': start_samples,
+                        'volume': mt.volume,
+                        'duck_under_speech': mt.duck_under_speech,
+                        'duck_level': mt.duck_level,
+                        'duck_attack_samples': int(mt.duck_attack_ms / 1000.0 * engine_sr),
+                        'duck_release_samples': int(mt.duck_release_ms / 1000.0 * engine_sr),
+                        'fade_in_samples': int(mt.fade_in_ms / 1000.0 * engine_sr),
+                        'fade_out_samples': int(mt.fade_out_ms / 1000.0 * engine_sr),
+                    })
+                    
+                    logger.info(f"Music track {mt.id}: asset={mt.asset_id}, {len(asset_audio)} samples")
+                    
+                except FileNotFoundError:
+                    logger.warning(f"Asset not found for music track {mt.id}: {mt.asset_id}")
+                    continue
+            
+            # === Phase 5: Mix timeline ===
+            logger.info(f"Mixing timeline: {len(speech_placements)} speech + {len(music_placements)} music, {total_samples} total samples")
+            
+            final_audio = mix_timeline(
+                speech_placements=speech_placements,
+                music_placements=music_placements,
+                total_samples=total_samples,
+                sample_rate=engine_sr
+            )
+            
+            # === Phase 6: Encode and save ===
+            audio_bytes = to_wav_bytes(final_audio, engine_sr, target_sr)
+            
+            project_id = project_dict.get('id', uuid.uuid4().hex[:8])
+            filename = f"podcast_{project_id}.wav"
+            file_path = storage.save_audio(audio_bytes, filename)
+            
+            # Build segment timing metadata for timeline UI
+            segment_timings = []
+            for pos_ms, audio, dur_ms in speech_results:
+                segment_timings.append({
+                    'start_ms': pos_ms,
+                    'duration_ms': dur_ms,
+                    'end_ms': pos_ms + dur_ms
+                })
+            
+            logger.info(f"v3 Podcast rendered: {file_path} ({total_duration_ms/1000:.1f}s)")
+            
+            return FileResponse(
+                path=file_path,
+                media_type="audio/wav",
+                filename=Path(file_path).name,
+                headers={
+                    'X-Segment-Timings': json.dumps(segment_timings),
+                    'X-Total-Duration-Ms': str(total_duration_ms)
+                }
+            )
+        finally:
+            # Clean up clone ref audio temp files
+            for tmp in clone_temp_files:
+                try:
+                    if tmp.exists():
+                        tmp.unlink()
+                except Exception:
+                    pass
+    
+    except Exception as e:
+        logger.error(f"Error in v3 render: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 # ===== HELPER FUNCTIONS =====

@@ -1,4 +1,6 @@
+# ──────────────────────────────────────────
 # Python
+# ──────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,6 +8,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -23,47 +26,69 @@ wheels/
 .installed.cfg
 *.egg
 
-# Models and Cache
+# ──────────────────────────────────────────
+# Models & Weights (large binaries)
+# ──────────────────────────────────────────
 models/
 *.pt
 *.bin
 *.safetensors
 cache/
 
-# Environment
-.env
-.venv
+# ──────────────────────────────────────────
+# Generated / Runtime Artifacts
+# ──────────────────────────────────────────
+outputs/
+temp_audio/
+assets/
+voice_prompts/
+*.wav
+*.mp3
+*.flac
 
-# IDE
+# ──────────────────────────────────────────
+# Documentation Artifacts (articles, drafts)
+# ──────────────────────────────────────────
+docs/
+
+# ──────────────────────────────────────────
+# Environment & Secrets
+# ──────────────────────────────────────────
+.env
+
+# ──────────────────────────────────────────
+# IDE & Editor
+# ──────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
+# ──────────────────────────────────────────
 # OS
+# ──────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
+# ──────────────────────────────────────────
 # Logs
+# ──────────────────────────────────────────
 *.log
 logs/
 
-# Generated Audio
-outputs/
-temp_audio/
-*.wav
-*.mp3
-*.flac
-
-# Node (for frontend)
+# ──────────────────────────────────────────
+# Node (if frontend tooling is added)
+# ──────────────────────────────────────────
 node_modules/
 frontend/dist/
 frontend/build/
 frontend/.next/
 frontend/out/
 
-# Build artifacts
+# ──────────────────────────────────────────
+# Installers / Build artifacts
+# ──────────────────────────────────────────
 installer/build/
 installer/dist/
 *.exe

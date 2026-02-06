@@ -41,6 +41,19 @@ audio:
     - "flac"
   max_duration_seconds: 300
 
+# v3: Music library API keys
+# Get your free keys:
+#   Jamendo: https://devportal.jamendo.com
+#   Freesound: https://freesound.org/apiv2/apply
+#   Openverse: https://api.openverse.org/v1/auth_tokens/register/ (optional)
+music_apis:
+  jamendo:
+    client_id: ""  # Free registration at devportal.jamendo.com
+  openverse:
+    token: ""      # Optional (anonymous access works with lower rate limits)
+  freesound:
+    token: ""      # Free registration at freesound.org/apiv2/apply
+
 speakers:
   custom_voice:
     - name: "Vivian"
