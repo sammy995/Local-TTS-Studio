@@ -12,14 +12,17 @@ This project implements **Hexagonal Architecture** (Ports & Adapters) with stric
 ## Layer Structure
 
 ```
-TTS-opensource-app/
+Local-TTS-Studio/
 ├── core/              # Pure compute (no I/O, no FastAPI, no environment)
 │   ├── model_manager.py    # Model loading & inference
 │   ├── tts_engine.py       # Compute orchestration
 │   └── audio_pipeline.py   # Data transformations
 │
 ├── services/          # Business orchestration (stateless)
-│   └── tts_service.py      # Use case workflows
+│   ├── tts_service.py      # Single-voice generation workflow
+│   ├── podcast_service.py  # Multi-speaker render pipeline
+│   ├── podcast_models.py   # Pydantic models for podcast scripts
+│   └── music_service.py    # Royalty-free music library client
 │
 ├── infra/             # Side effects only (storage, queue, auth)
 │   └── storage.py          # Protocol-based storage abstraction
