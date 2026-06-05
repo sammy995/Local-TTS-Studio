@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-tts-studio"
+version = "3.0.0"
+description = "Open-source, 100% offline speech studio: voice cloning, multi-speaker podcasts, and timeline music mixing. A self-hosted ElevenLabs alternative."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Local TTS Studio contributors" }]
+keywords = [
+    "text-to-speech",
+    "tts",
+    "voice-cloning",
+    "speech-synthesis",
+    "podcast",
+    "qwen",
+    "elevenlabs-alternative",
+    "self-hosted",
+    "offline",
+    "ai",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "qwen-tts>=0.0.5",
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "soundfile>=0.12.0",
+    "librosa>=0.10.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    "aiofiles>=23.0.0",
+    "pydantic>=2.0.0",
+    "pydub>=0.25.0",
+    "numpy>=1.24.0",
+    "requests>=2.31.0",
+    "httpx>=0.25.0",
+    "tqdm>=4.66.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+# Optional speed-up; not available on macOS.
+flash = ["flash-attn>=2.5.0; sys_platform == 'linux' or sys_platform == 'win32'"]
+# Tooling for contributors.
+dev = ["ruff>=0.4.0", "pytest>=8.0.0"]
+
+[project.scripts]
+local-tts = "runtimes.local_api:start_server"
+
+[project.urls]
+Homepage = "https://github.com/sammy995/Local-TTS-Studio"
+Repository = "https://github.com/sammy995/Local-TTS-Studio"
+Issues = "https://github.com/sammy995/Local-TTS-Studio/issues"
+
+[tool.setuptools]
+packages = ["core", "services", "infra", "runtimes"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.html", "*.svg"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
