@@ -149,11 +149,11 @@ Want one of these? [Open an issue](https://github.com/sammy995/Local-TTS-Studio/
 
 | Custom Voice | Voice Design |
 |:---:|:---:|
-| ![Custom Voice](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118) | ![Voice Design](https://github.com/user-attachments/assets/e0e5faa8-57d1-4f00-8257-128028b9acfc) |
+| ![Custom Voice](https://github.com/user-attachments/assets/40241e98-e521-49c7-b03c-253a7b4cba4e) | ![Voice Design](https://github.com/user-attachments/assets/24281f16-3575-4e5a-950a-fc3d144345b1) |
 
 | Voice Clone | Podcast Mode |
 |:---:|:---:|
-| ![Voice Clone](https://github.com/user-attachments/assets/1af92da4-8beb-4c42-871b-3cd7c46013f4) | ![Podcast Mode](https://github.com/user-attachments/assets/00e23608-f04c-45fa-ad49-54972c773118) |
+| ![Voice Clone](https://github.com/user-attachments/assets/d812fc31-266b-4bb4-b8e3-92c9ecbad1c9) | ![Podcast Mode](https://github.com/user-attachments/assets/6d3faa49-cb36-4b62-aea3-5336a2008055) |
 
 ---
 
