@@ -2759,9 +2759,10 @@
             function updateSimulatedProgress() {
                 if (progressDone) return;
                 const elapsed = Date.now() - progressStartTime;
-                // Ease-out curve that approaches 90% but never reaches it
                 const raw = elapsed / totalEstimatedMs;
-                const pct = Math.min(90, Math.floor(raw * 100 * (1 - raw * 0.3)));
+                // Hyperbolic ease-out: approaches 90 asymptotically, never negative
+                // pct(raw) = 90 * (1 - 1/(1 + 2·raw))
+                const pct = Math.floor(90 * (1 - 1 / (1 + 2 * raw)));
                 const segEstimate = Math.min(totalSteps, Math.floor(elapsed / estimatedMsPerSegment) + 1);
                 progressBar.style.width = pct + '%';
                 progressPercent.textContent = pct + '%';

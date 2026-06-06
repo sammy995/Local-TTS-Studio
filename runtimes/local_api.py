@@ -670,57 +670,48 @@ async def render_podcast(request: Request):
             total_segments = len(sorted_segments)
             
             logger.info(f"Rendering podcast: {project.title} ({total_segments} segments, {len(project.speakers)} speakers)")
-            
-            # Render segments with progress (runtime controls progress)
+
             from core.audio_pipeline import generate_silence
             import numpy as np
-            
-            arrays = []
-            sample_rate = None
-            failed_segments = []
-            
-            for i, segment in enumerate(sorted_segments):
-                speaker = speaker_map[segment.speaker_id]
-                
-                logger.info(f"Rendering segment {i+1}/{total_segments}: {speaker.name} - '{segment.text[:50]}...'")
-                
-                try:
-                    # Render segment (includes retry logic in podcast_service)
-                    audio_array, sr = podcast_service.render_segment(
-                        segment=segment,
-                        speaker=speaker,
-                        prompt_cache=prompt_cache,
-                        deterministic=project.deterministic
-                    )
-                    
-                    if sample_rate is None:
-                        sample_rate = sr
-                    
-                    arrays.append(audio_array)
-                    
-                except Exception as seg_error:
-                    # Segment failed even after retries — log and insert brief silence placeholder
-                    logger.error(f"Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
-                    failed_segments.append((i+1, speaker.name, str(seg_error)))
-                    
-                    # Use known sample rate or default
-                    sr = sample_rate or 24000
-                    if sample_rate is None:
-                        sample_rate = sr
-                    
-                    # Insert 200ms silence placeholder (not the full pause — avoids long gaps)
-                    placeholder = generate_silence(duration_ms=200, sample_rate=sr)
-                    arrays.append(placeholder)
-                
-                # Add pause between segments
-                if segment.pause_after_ms > 0 and sample_rate is not None:
-                    silence = generate_silence(
-                        duration_ms=segment.pause_after_ms,
-                        sample_rate=sample_rate,
-                        reference_array=arrays[-1]
-                    )
-                    arrays.append(silence)
-            
+
+            # Run the entire blocking synthesis loop in a thread-pool executor so
+            # the asyncio event loop stays alive during rendering (health checks,
+            # other API calls, and SSE keepalives all continue to work).
+            def _render_segments_sync():
+                _arrays = []
+                _sample_rate = None
+                _failed = []
+                for i, segment in enumerate(sorted_segments):
+                    speaker = speaker_map[segment.speaker_id]
+                    logger.info(f"Rendering segment {i+1}/{total_segments}: {speaker.name} - '{segment.text[:50]}...'")
+                    try:
+                        audio_array, sr = podcast_service.render_segment(
+                            segment=segment,
+                            speaker=speaker,
+                            prompt_cache=prompt_cache,
+                            deterministic=project.deterministic
+                        )
+                        if _sample_rate is None:
+                            _sample_rate = sr
+                        _arrays.append(audio_array)
+                    except Exception as seg_error:
+                        logger.error(f"Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
+                        _failed.append((i+1, speaker.name, str(seg_error)))
+                        sr = _sample_rate or 24000
+                        if _sample_rate is None:
+                            _sample_rate = sr
+                        _arrays.append(generate_silence(duration_ms=200, sample_rate=sr))
+                    if segment.pause_after_ms > 0 and _sample_rate is not None:
+                        _arrays.append(generate_silence(
+                            duration_ms=segment.pause_after_ms,
+                            sample_rate=_sample_rate,
+                            reference_array=_arrays[-1]
+                        ))
+                return _arrays, _sample_rate, _failed
+
+            loop = asyncio.get_event_loop()
+            arrays, sample_rate, failed_segments = await loop.run_in_executor(None, _render_segments_sync)
+
             if failed_segments:
                 logger.warning(f"{len(failed_segments)}/{total_segments} segments failed: {failed_segments}")
             
@@ -1037,54 +1028,44 @@ async def render_podcast_v3(request: Request):
             prompt_cache = podcast_service._precompute_speaker_prompts(speakers)
             sorted_speech = sorted(speech_segments, key=lambda s: s.order)
             
-            # Render each speech segment and track positions
-            speech_results = []  # List of (start_ms, audio_array, duration_ms)
-            current_ms = 0  # Running position for auto-sequential
-            engine_sr = None
-            failed_segments_v3 = []
-            
-            for i, segment in enumerate(sorted_speech):
-                speaker = speaker_map.get(segment.speaker_id)
-                if not speaker:
-                    raise ValueError(f"Speaker not found: {segment.speaker_id}")
-                
-                logger.info(f"Rendering speech {i+1}/{len(sorted_speech)}: {speaker.name}")
-                
-                try:
-                    audio_array, sr = podcast_service.render_segment(
-                        segment=segment,
-                        speaker=speaker,
-                        prompt_cache=prompt_cache,
-                        deterministic=deterministic
-                    )
-                except Exception as seg_error:
-                    # Segment failed even after retries — insert tiny placeholder
-                    logger.error(f"v3 Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
-                    failed_segments_v3.append((i+1, speaker.name, str(seg_error)))
-                    sr = engine_sr or 24000
-                    # 200ms silence placeholder instead of dead air
-                    audio_array = np.zeros(int(0.2 * sr), dtype=np.float32)
-                
-                if engine_sr is None:
-                    engine_sr = sr
-                
-                # Determine timeline position
-                if segment.start_ms is not None:
-                    pos_ms = segment.start_ms
-                else:
-                    pos_ms = current_ms  # Auto-sequential fallback
-                
-                duration_ms = int(len(audio_array) / sr * 1000)
-                speech_results.append((pos_ms, audio_array, duration_ms))
-                
-                # Advance auto position
-                current_ms = pos_ms + duration_ms + segment.pause_after_ms
-            
+            # Render each speech segment and track positions — run in executor
+            # so the asyncio event loop stays alive during long synthesis.
+            def _render_speech_sync():
+                _results = []
+                _current_ms = 0
+                _engine_sr = None
+                _failed = []
+                for i, segment in enumerate(sorted_speech):
+                    speaker = speaker_map.get(segment.speaker_id)
+                    if not speaker:
+                        raise ValueError(f"Speaker not found: {segment.speaker_id}")
+                    logger.info(f"Rendering speech {i+1}/{len(sorted_speech)}: {speaker.name}")
+                    try:
+                        audio_array, sr = podcast_service.render_segment(
+                            segment=segment,
+                            speaker=speaker,
+                            prompt_cache=prompt_cache,
+                            deterministic=deterministic
+                        )
+                    except Exception as seg_error:
+                        logger.error(f"v3 Segment {i+1} ({speaker.name}) failed permanently: {seg_error}")
+                        _failed.append((i+1, speaker.name, str(seg_error)))
+                        sr = _engine_sr or 24000
+                        audio_array = np.zeros(int(0.2 * sr), dtype=np.float32)
+                    if _engine_sr is None:
+                        _engine_sr = sr
+                    pos_ms = segment.start_ms if segment.start_ms is not None else _current_ms
+                    duration_ms = int(len(audio_array) / sr * 1000)
+                    _results.append((pos_ms, audio_array, duration_ms))
+                    _current_ms = pos_ms + duration_ms + segment.pause_after_ms
+                return _results, _engine_sr or 24000, _failed
+
+            speech_results, engine_sr, failed_segments_v3 = await asyncio.get_event_loop().run_in_executor(
+                None, _render_speech_sync
+            )
+
             if failed_segments_v3:
                 logger.warning(f"v3: {len(failed_segments_v3)}/{len(sorted_speech)} segments failed: {failed_segments_v3}")
-            
-            if engine_sr is None:
-                engine_sr = 24000  # Default engine sample rate
             
             # === Phase 2: Calculate total timeline duration ===
             max_speech_end = 0
